@@ -73,7 +73,7 @@ public class GameBoard {
 
     public List<BoardPoint> getEnemyBodyAndTail() {
         return findAllElements(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP,
-                ENEMY_HEAD_DEAD, ENEMY_HEAD_EVIL, ENEMY_HEAD_SLEEP,
+                ENEMY_HEAD_DEAD, ENEMY_HEAD_EVIL,
                 // хвосты змеек противников
                 ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_LEFT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_INACTIVE,
                 // туловище змеек противников
