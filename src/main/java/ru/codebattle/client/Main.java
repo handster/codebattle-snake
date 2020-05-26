@@ -16,8 +16,9 @@ import static ru.codebattle.client.api.Direction.*;
 public class Main {
 
     private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/0i28858kqgje0hm6uqui?code=9205253768897784839&gameName=snakebattle";
-    public static final int LIMIT_SIZE = 10;
-    public static BoardElement lastAteFood;
+    public static final int LIMIT_SIZE = 12;
+    public static final int LIMIT_EVIL_COUNT = 8;
+    public static int evilCount = 0;
 
     public static void main(String[] args) throws URISyntaxException, IOException {
         SnakeBattleClient client = new SnakeBattleClient(SERVER_ADDRESS);
@@ -36,14 +37,20 @@ public class Main {
 
             // Пока собирать только яблоки
             List<BoardPoint> apples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
-            // Удаляем яблоки, которые стоят в тупиках
             boolean headEvil = false;
             if (gameBoard.getElementAt(myHead) == HEAD_EVIL) {
-                headEvil = true;
-                List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
-                apples.addAll(enemyBodyAndTail);
-                apples.addAll(gameBoard.findAllElements(STONE));
+                evilCount++;
+                if (evilCount <= LIMIT_EVIL_COUNT) {
+                    headEvil = true;
+                    List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+                    apples.addAll(enemyBodyAndTail);
+                    apples.addAll(gameBoard.findAllElements(STONE));
+                }
+            } else {
+                evilCount = 0;
             }
+            log.info("Evil count is " + evilCount);
+            // Удаляем яблоки, которые стоят в тупиках
             apples = getApplesWithoutBlockApples(apples, gameBoard, headEvil);
             log.info("Apples " + apples);
             List<BoardPoint> nearestPathToApple = getNearestPathToApple(apples, myHead, gameBoard);
@@ -129,11 +136,12 @@ public class Main {
         //Если тело меньше либо равно 4 то обходим камни
         List<BoardPoint> allElements = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
         List<BoardPoint> barriers = gameBoard.getBarriers();
+        // Добавляем врагов
         barriers.addAll(gameBoard.getMyBodyAndTail());
+        // Добавляем себя
         barriers.addAll(gameBoard.getEnemyBodyAndTail());
         List<BoardPoint> stones = gameBoard.findAllElements(STONE);
         if (myBodySize > LIMIT_SIZE) {
-            // Если тело больше 4 то едим камни тоже
             allElements = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL, STONE);
             barriers.removeAll(stones);
         }
