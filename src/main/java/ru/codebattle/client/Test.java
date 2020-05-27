@@ -24,16 +24,16 @@ public class Test {
                         "☼#       ●●      ☼☼☼☼☼       ☼\n" +
                         "☼☼ ╘═╗  ☼#      ×>  ●●       ☼\n" +
                         "☼☼   ♥                  ○    ☼\n" +
-                        "☼☼  ×>       ●              ☼☼\n" +
-                        "☼#          ●     ☼#        $☼\n" +
-                        "☼☼      ●●☼☼   ☼   ☼ ○☼●    ☼☼\n" +
+                        "☼☼           ●              ☼☼\n" +
+                        "☼#   ˄      ●     ☼#        $☼\n" +
+                        "☼☼   └ö ●●☼☼   ☼   ☼ ○☼●    ☼☼\n" +
                         "☼☼ ● ●  ☼     ☼ ☼  ●  ●○ ●   ☼\n" +
                         "☼☼ ● ●  ☼○         ☼  ☼●     ☼\n" +
                         "☼☼      ●●☼               ●  ☼\n" +
                         "☼☼○             ☼#      ×>☼ ☼☼\n" +
                         "☼☼             ☼    ®       ○☼\n" +
-                        "☼☼˄   ●      ●☼○☼●   ●●●☼ ☼ ☼☼\n" +
-                        "☼#└ö        ●●○$○●●          ☼\n" +
+                        "☼☼    ●      ●☼○☼●   ●●●☼ ☼ ☼☼\n" +
+                        "☼#          ●●○$○●●          ☼\n" +
                         "☼☼   ●       ●☼○☼●   ●●●     ☼\n" +
                         "☼☼   ○         ☼   ☼#      ×>☼\n" +
                         "☼☼   ●   ●☼ ☼                ☼\n" +
@@ -53,9 +53,7 @@ public class Test {
         BoardPoint myHead = gameBoard.getMyHead();
         log.info("My head is " + myHead);
         List<BoardPoint> apples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
-        apples.add(new BoardPoint(4, 4));
-        log.info("Apples " + apples);
-        List<BoardPoint> nearestPathToApple = Main.getNearestPathToApple(apples, myHead, gameBoard);
+        List<BoardPoint> nearestPathToApple = Main.getNearestPathToApple(apples, myHead, gameBoard, true);
         log.info("Nearest path is " + nearestPathToApple);
     }
 

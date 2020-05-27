@@ -16,9 +16,11 @@ import static ru.codebattle.client.api.Direction.*;
 public class Main {
 
     private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/0i28858kqgje0hm6uqui?code=9205253768897784839&gameName=snakebattle";
-    public static final int LIMIT_SIZE = 12;
-    public static final int LIMIT_EVIL_COUNT = 8;
+//    public static final int LIMIT_SIZE = 10;
+    public static int limitEvilCount = 9;
+    public static final int STONE_RADIUS = 2;
     public static int evilCount = 0;
+    public static List<BoardPoint> furyPills = new ArrayList<>();
 
     public static void main(String[] args) throws URISyntaxException, IOException {
         SnakeBattleClient client = new SnakeBattleClient(SERVER_ADDRESS);
@@ -38,22 +40,30 @@ public class Main {
             // Пока собирать только яблоки
             List<BoardPoint> apples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
             boolean headEvil = false;
+            // Воткнуть проверку была ли съедена таблетка под действием другой таблетки
             if (gameBoard.getElementAt(myHead) == HEAD_EVIL) {
+                // Если на месте таблеток ярости теперь моя голова, то увеличиваем счетчик
+                if (furyPills.contains(myHead)) {
+                    limitEvilCount += 10;
+                    log.info("Жадность до таблеток " + limitEvilCount);
+                }
+                furyPills = gameBoard.getFuryPills();
                 evilCount++;
-                if (evilCount <= LIMIT_EVIL_COUNT) {
+                if (evilCount <= limitEvilCount) {
                     headEvil = true;
-                    List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
-                    apples.addAll(enemyBodyAndTail);
-                    apples.addAll(gameBoard.findAllElements(STONE));
+//                    List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+//                    apples.addAll(enemyBodyAndTail);
+//                    apples.addAll(gameBoard.findAllElements(STONE));
                 }
             } else {
                 evilCount = 0;
+                limitEvilCount = 8;
             }
             log.info("Evil count is " + evilCount);
             // Удаляем яблоки, которые стоят в тупиках
             apples = getApplesWithoutBlockApples(apples, gameBoard, headEvil);
             log.info("Apples " + apples);
-            List<BoardPoint> nearestPathToApple = getNearestPathToApple(apples, myHead, gameBoard);
+            List<BoardPoint> nearestPathToApple = getNearestPathToApple(apples, myHead, gameBoard, headEvil);
             log.info("Nearest path is " + nearestPathToApple);
             // и можно ли в них идти
             if (nearestPathToApple.isEmpty()) {
@@ -75,12 +85,54 @@ public class Main {
             }
             Direction direction = goToWin(myHead, nearestPathToApple.get(0));
 
-            return new SnakeAction(false, direction);
+            boolean act = getAct(gameBoard);
+            return new SnakeAction(act, direction);
         });
 
         System.in.read();
 
         client.initiateExit();
+    }
+
+    private static boolean getAct(GameBoard gameBoard) {
+        List<BoardPoint> myTails = gameBoard.getMyTail();
+        if (myTails.isEmpty()) {
+            return false;
+        }
+        BoardPoint myTail = myTails.get(0);
+        // Получить все точки на расстоянии 2 ходов от моего хвоста
+        List<BoardPoint> pointsAroundMyTail = getPointsAroundAnotherPoint(gameBoard, myTail, STONE_RADIUS);
+        List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
+        //TODO проверить оставляем мы камни или нет
+        if (CollectionUtils.containsAny(pointsAroundMyTail, enemyHeads)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static List<BoardPoint> getPointsAroundAnotherPoint(GameBoard gameBoard, BoardPoint boardPoint, int radius) {
+        int size = gameBoard.size();
+        List<BoardPoint> aroundMePoints = new ArrayList<>();
+        // Получить все точки вокруг себя
+        for (int i = 1; i <= radius; i++) {
+            BoardPoint leftPoint = boardPoint.shiftLeft(i);
+            if (!leftPoint.isOutOfBoard(size)) {
+                aroundMePoints.add(leftPoint);
+            }
+            BoardPoint rightPoint = boardPoint.shiftRight(i);
+            if (!rightPoint.isOutOfBoard(size)) {
+                aroundMePoints.add(rightPoint);
+            }
+            BoardPoint topPoint = boardPoint.shiftTop(i);
+            if (!topPoint.isOutOfBoard(size)) {
+                aroundMePoints.add(topPoint);
+            }
+            BoardPoint bottomPoint = boardPoint.shiftBottom(i);
+            if (!bottomPoint.isOutOfBoard(size)) {
+                aroundMePoints.add(bottomPoint);
+            }
+        }
+        return aroundMePoints;
     }
 
     private static List<BoardPoint> getApplesWithoutBlockApples(List<BoardPoint> apples, GameBoard gameBoard, boolean headEvil) {
@@ -92,7 +144,10 @@ public class Main {
     private static boolean getThreeWallsAround(GameBoard gameBoard, BoardPoint apple, boolean headEvil) {
         Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, apple);
         int size = gameBoard.getMyBodyAndTail().size();
-        if (size > LIMIT_SIZE || headEvil) {
+        if (
+                // Неактуально стало есть камни без ярости
+//                size > LIMIT_SIZE ||
+                        headEvil) {
             return pointsAroundMe.stream()
                     .filter(boardPoint -> gameBoard.getElementAt(boardPoint) == WALL)
                     .count() == 3;
@@ -126,37 +181,52 @@ public class Main {
         return aroundMePoints;
     }
 
-    public static List<BoardPoint> getNearestPathToApple(List<BoardPoint> allApples, BoardPoint myHead, GameBoard gameBoard) {
+    // Поиск пути к ближайшей цели
+    public static List<BoardPoint> getNearestPathToApple(List<BoardPoint> allApples, BoardPoint myHead,
+                                                         GameBoard gameBoard, boolean headEvil) {
 
         List<BoardPoint> pathToOurApples = new ArrayList<>();
-        List<Node> nodes = mapToNode(allApples);
+        List<BoardPoint> stones = gameBoard.findAllElements(STONE);
 
+        // Элементы через которые можно проложить путь
+        List<BoardPoint> allElements = gameBoard.findAllElements(NONE);
+
+        // Элементы, в которые лучше не врезаться. Убрал отсюда камни
+        List<BoardPoint> barriers = gameBoard.getBarriers();
+        barriers.addAll(gameBoard.getMyBodyAndTail());
+
+        // Враги
+        List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+
+        // Получаем длину тела
         int myBodySize = gameBoard.getMyBodyAndTail().size();
         log.info("My length is " + myBodySize);
-        //Если тело меньше либо равно 4 то обходим камни
-        List<BoardPoint> allElements = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
-        List<BoardPoint> barriers = gameBoard.getBarriers();
-        // Добавляем врагов
-        barriers.addAll(gameBoard.getMyBodyAndTail());
-        // Добавляем себя
-        barriers.addAll(gameBoard.getEnemyBodyAndTail());
-        List<BoardPoint> stones = gameBoard.findAllElements(STONE);
-        if (myBodySize > LIMIT_SIZE) {
-            allElements = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL, STONE);
-            barriers.removeAll(stones);
-        }
 
-        // Если под таблеткой ярости
-        if (gameBoard.hasElementAt(myHead, HEAD_EVIL)) {
-            List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
-            allElements.addAll(enemyBodyAndTail);
-            allElements.addAll(gameBoard.findAllElements(STONE));
-            barriers = gameBoard.getBarriers();
-            barriers.removeAll(stones);
+        // Если под таблеткой ярости, до добавить в цели врагов и камни
+        if (headEvil) {
+            allApples.addAll(enemyBodyAndTail);
+            allApples.addAll(stones);
+            // Добавляем в список клеток для движения врагов и камни
             log.info("В АТАКУ ...");
         }
+        // Неактуально стало есть камни без ярости
+        else {
+//            // Если длина меньше, то не едим камни
+//            if (myBodySize < LIMIT_SIZE) {
+//                barriers.addAll(stones);
+//            }
+            // Убрать из неразмеченных точек, точки на которые могут попасть головы врагов
+            List<BoardPoint> allBoardPointEnemyHeadsAround = getAllBoardPointEnemyHeadsAround(gameBoard);
+            allElements.removeAll(allBoardPointEnemyHeadsAround);
+        }
 
-        //Неразмеченные точки
+        log.info("Apples are " + allApples);
+        allElements.addAll(allApples);
+
+        // Наши цели
+        List<Node> nodes = mapToNode(allApples);
+
+        //Неразмеченные точки для нахождения пути
         List<Node> unsettledNodes = mapToNode(allElements);
 
         //Размеченные точки
@@ -188,8 +258,15 @@ public class Main {
         return pathToOurApples;
     }
 
+    private static List<BoardPoint> getAllBoardPointEnemyHeadsAround(GameBoard gameBoard) {
+        List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
+        return enemyHeads.stream()
+                .flatMap(head -> getPointsAroundMe(gameBoard, head).stream())
+                .collect(Collectors.toList());
+    }
+
     public static Set<Node> getLowestDistanceNode(List<Node> unsettledNodes, List<Node> settledNodes,
-                                                   GameBoard gameBoard, List<BoardPoint> barriers) {
+                                                  GameBoard gameBoard, List<BoardPoint> barriers) {
         // Для всех точек из settledNodes получить точки вокруг
         Set<Node> set = new HashSet<>();
         for (Node node : settledNodes) {

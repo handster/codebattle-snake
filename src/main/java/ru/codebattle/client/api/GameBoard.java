@@ -71,18 +71,27 @@ public class GameBoard {
                 BODY_HORIZONTAL, BODY_VERTICAL, BODY_LEFT_DOWN, BODY_LEFT_UP, BODY_RIGHT_DOWN, BODY_RIGHT_UP);
     }
 
+
+    public List<BoardPoint> getMyTail() {
+        return findAllElements(TAIL_END_DOWN, TAIL_END_UP, TAIL_END_LEFT, TAIL_END_RIGHT);
+    }
+
+    public List<BoardPoint> getEnemyHeads() {
+        return findAllElements(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP, ENEMY_HEAD_EVIL);
+    }
+
     public List<BoardPoint> getEnemyBodyAndTail() {
         return findAllElements(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP,
                 ENEMY_HEAD_DEAD, ENEMY_HEAD_EVIL,
                 // хвосты змеек противников
-                ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_LEFT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_INACTIVE,
+//                ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_LEFT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_INACTIVE,
                 // туловище змеек противников
                 ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN, ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN,
                 ENEMY_BODY_RIGHT_UP);
     }
 
     public List<BoardPoint> getBarriers() {
-        return findAllElements(WALL, START_FLOOR, ENEMY_HEAD_SLEEP, ENEMY_TAIL_INACTIVE, TAIL_INACTIVE, STONE);
+        return findAllElements(WALL, START_FLOOR, ENEMY_HEAD_SLEEP, ENEMY_TAIL_INACTIVE, TAIL_INACTIVE);
     }
 
     public boolean hasElementAt(BoardPoint point, BoardElement element) {
