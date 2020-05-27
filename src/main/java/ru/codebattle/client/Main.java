@@ -61,7 +61,6 @@ public class Main {
             }
             log.info("Evil count is " + evilCount);
             // Удаляем яблоки, которые стоят в тупиках
-            apples = getApplesWithoutBlockApples(apples, gameBoard, headEvil);
             log.info("Apples " + apples);
             List<BoardPoint> nearestPathToApple = getNearestPathToApple(apples, myHead, gameBoard, headEvil);
             log.info("Nearest path is " + nearestPathToApple);
@@ -94,42 +93,34 @@ public class Main {
         client.initiateExit();
     }
 
-    private static boolean getAct(GameBoard gameBoard) {
+    public static boolean getAct(GameBoard gameBoard) {
         List<BoardPoint> myTails = gameBoard.getMyTail();
         if (myTails.isEmpty()) {
             return false;
         }
         BoardPoint myTail = myTails.get(0);
         // Получить все точки на расстоянии 2 ходов от моего хвоста
-        List<BoardPoint> pointsAroundMyTail = getPointsAroundAnotherPoint(gameBoard, myTail, STONE_RADIUS);
+        Set<BoardPoint> pointsAroundMyTail = getPointsAroundAnotherPoint(gameBoard, myTail, STONE_RADIUS);
         List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
-        //TODO проверить оставляем мы камни или нет
         if (CollectionUtils.containsAny(pointsAroundMyTail, enemyHeads)) {
             return true;
         }
         return false;
     }
 
-    private static List<BoardPoint> getPointsAroundAnotherPoint(GameBoard gameBoard, BoardPoint boardPoint, int radius) {
+    private static Set<BoardPoint> getPointsAroundAnotherPoint(GameBoard gameBoard, BoardPoint boardPoint, int radius) {
         int size = gameBoard.size();
-        List<BoardPoint> aroundMePoints = new ArrayList<>();
+        Set<BoardPoint> aroundMePoints = new HashSet<>();
+        int x = boardPoint.getX();
+        int y = boardPoint.getY();
         // Получить все точки вокруг себя
-        for (int i = 1; i <= radius; i++) {
-            BoardPoint leftPoint = boardPoint.shiftLeft(i);
-            if (!leftPoint.isOutOfBoard(size)) {
-                aroundMePoints.add(leftPoint);
-            }
-            BoardPoint rightPoint = boardPoint.shiftRight(i);
-            if (!rightPoint.isOutOfBoard(size)) {
-                aroundMePoints.add(rightPoint);
-            }
-            BoardPoint topPoint = boardPoint.shiftTop(i);
-            if (!topPoint.isOutOfBoard(size)) {
-                aroundMePoints.add(topPoint);
-            }
-            BoardPoint bottomPoint = boardPoint.shiftBottom(i);
-            if (!bottomPoint.isOutOfBoard(size)) {
-                aroundMePoints.add(bottomPoint);
+        BoardPoint point;
+        for (int i = x - radius; i <= x + radius; i++) {
+            for (int j = y - radius; j < y + radius; j++) {
+                point = new BoardPoint(i, j);
+                if (!point.isOutOfBoard(size)) {
+                    aroundMePoints.add(point);
+                }
             }
         }
         return aroundMePoints;
@@ -243,8 +234,8 @@ public class Main {
             // Добавляем в список клеток для движения врагов и камни
             log.info("В АТАКУ ...");
 
-            // Если враг под яростью и длиннее чем я, то убегаем
-            if (isMyEnemyEvil && isMyEnemyLongerThanI) {
+            // Если враг под яростью то убегаем
+            if (isMyEnemyEvil) {
                 allElements.removeAll(commonPoints);
                 allApples.removeAll(commonPoints);
             }
@@ -263,6 +254,9 @@ public class Main {
 
         log.info("Apples are " + allApples);
         allElements.addAll(allApples);
+
+        //Отфильтровать яблоки в тупиках
+        allApples = getApplesWithoutBlockApples(allApples, gameBoard, headEvil);
 
         // Наши цели
         List<Node> nodes = mapToNode(allApples);
@@ -285,7 +279,28 @@ public class Main {
             settledNodes.addAll(currentNodes);
             if (CollectionUtils.containsAny(settledNodes, nodes)) {
                 List<Node> nodes1 = (List<Node>) CollectionUtils.retainAll(settledNodes, nodes);
+                log.info("path size is " + nodes1.size());
+
                 Node path = nodes1.get(0);
+                // Если до нескольких объектов одинаковое расстояние, то выбирать таблетку
+                // Если нет таблетки, то может хотя бы золото, ну а если уж ничего нет
+                // будем есть яблоки
+                if (nodes1.size() > 1) {
+                    List<Node> collect = nodes1.stream()
+                            .filter(node -> gameBoard.getElementAt(node.getBoardPoint()) == FURY_PILL)
+                            .collect(Collectors.toList());
+                    if (!collect.isEmpty()) {
+                        path = collect.get(0);
+                    } else {
+                        collect = nodes1.stream()
+                                .filter(node -> gameBoard.getElementAt(node.getBoardPoint()) == GOLD)
+                                .collect(Collectors.toList());
+                        if (!collect.isEmpty()) {
+                            path = collect.get(0);
+                        }
+                    }
+                }
+
                 while (path.getParent() != null) {
                     pathToOurApples.add(path.getBoardPoint());
                     path = path.getParent();

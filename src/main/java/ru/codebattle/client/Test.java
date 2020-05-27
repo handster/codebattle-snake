@@ -20,38 +20,38 @@ public class Test {
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
-                        "☼☼                             ®  ☼\n" +
-                        "☼☼      ®                         ☼\n" +
+                        "☼☼ ○                              ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                               ○☼\n" +
+                        "☼☼      ○                         ☼\n" +
+                        "☼#     ○                   ○      ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                       ○        ☼\n" +
+                        "☼☼                               ®☼\n" +
+                        "☼☼               ®                ☼\n" +
+                        "☼☼             ○                  ☼\n" +
+                        "☼#                                ☼\n" +
+                        "☼☼              ○                 ☼\n" +
+                        "☼☼         ●                      ☼\n" +
                         "☼☼                                ☼\n" +
                         "☼☼                                ☼\n" +
-                        "☼#  ○                             ☼\n" +
-                        "☼☼                     ○         ○☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼#                       <───────┐☼\n" +
+                        "☼☼                    ○ ▲       ×┘☼\n" +
+                        "☼☼                      ║         ☼\n" +
+                        "☼☼                      ║         ☼\n" +
+                        "☼☼                     ●║         ☼\n" +
+                        "☼☼                      ║         ☼\n" +
+                        "☼#                     ╔╝         ☼\n" +
+                        "☼☼○             ╘══════╝          ☼\n" +
                         "☼☼                                ☼\n" +
                         "☼☼                                ☼\n" +
+                        "☼☼       ○                        ☼\n" +
                         "☼☼                                ☼\n" +
+                        "☼#                                ☼\n" +
+                        "☼☼  ○                             ☼\n" +
                         "☼☼                    ○           ☼\n" +
-                        "☼#                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                            ○   ☼\n" +
-                        "☼☼                        ○       ☼\n" +
-                        "☼#                                ☼\n" +
-                        "☼☼                     ×───♣      ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                         ▲      ☼\n" +
-                        "☼☼                       ╘═╝      ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼#                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼#                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                ●               ☼\n" +
+                        "☼☼   $                            ☼\n" +
                         "☼☼                                ☼\n" +
                         "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼");
         System.out.println(gameBoard);
@@ -60,6 +60,8 @@ public class Test {
         List<BoardPoint> apples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
         List<BoardPoint> nearestPathToApple = Main.getNearestPathToApple(apples, myHead, gameBoard, false);
         log.info("Nearest path is " + nearestPathToApple);
+        boolean act = Main.getAct(gameBoard);
+        System.out.println(act);
     }
 
     public static List<BoardPoint> getNearestPathToApple(List<BoardPoint> allApples, BoardPoint myHead, GameBoard gameBoard) {
