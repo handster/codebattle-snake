@@ -19,41 +19,46 @@ public class Test {
     public static final int LIMIT_SIZE = 10;
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
-                "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
-                        "☼☼        ☼○☼ ○            ☼$☼\n" +
-                        "☼#       ●●      ☼☼☼☼☼       ☼\n" +
-                        "☼☼ ╘═╗  ☼#      ×>  ●●       ☼\n" +
-                        "☼☼   ♥                  ○    ☼\n" +
-                        "☼☼           ●              ☼☼\n" +
-                        "☼#   ˄      ●     ☼#        $☼\n" +
-                        "☼☼   └ö ●●☼☼   ☼   ☼ ○☼●    ☼☼\n" +
-                        "☼☼ ● ●  ☼     ☼ ☼  ●  ●○ ●   ☼\n" +
-                        "☼☼ ● ●  ☼○         ☼  ☼●     ☼\n" +
-                        "☼☼      ●●☼               ●  ☼\n" +
-                        "☼☼○             ☼#      ×>☼ ☼☼\n" +
-                        "☼☼             ☼    ®       ○☼\n" +
-                        "☼☼    ●      ●☼○☼●   ●●●☼ ☼ ☼☼\n" +
-                        "☼#          ●●○$○●●          ☼\n" +
-                        "☼☼   ●       ●☼○☼●   ●●●     ☼\n" +
-                        "☼☼   ○         ☼   ☼#      ×>☼\n" +
-                        "☼☼   ●   ●☼ ☼                ☼\n" +
-                        "☼☼☼         ●     ●          ☼\n" +
-                        "☼☼○      ☼☼●●               ☼☼\n" +
-                        "☼☼☼         ☼  ®            ○☼\n" +
-                        "☼☼○☼●   ® ●☼#               ☼☼\n" +
-                        "☼☼  ●        ○               ☼\n" +
-                        "☼☼   ○              ☼●☼    ● ☼\n" +
-                        "☼☼   ●                 ●   ●○☼\n" +
-                        "☼☼   ●  ○        ☼●☼#        ☼\n" +
-                        "☼#        ●●                 ☼\n" +
-                        "☼☼               ○           ☼\n" +
-                        "☼☼○☼       ●●      ☼○☼     ☼$☼\n" +
-                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼");
+                "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
+                        "☼☼                             ®  ☼\n" +
+                        "☼☼      ®                         ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼#  ○                             ☼\n" +
+                        "☼☼                     ○         ○☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                    ○           ☼\n" +
+                        "☼#                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                            ○   ☼\n" +
+                        "☼☼                        ○       ☼\n" +
+                        "☼#                                ☼\n" +
+                        "☼☼                     ×───♣      ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                         ▲      ☼\n" +
+                        "☼☼                       ╘═╝      ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼#                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼#                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼                ●               ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼");
         System.out.println(gameBoard);
         BoardPoint myHead = gameBoard.getMyHead();
         log.info("My head is " + myHead);
         List<BoardPoint> apples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
-        List<BoardPoint> nearestPathToApple = Main.getNearestPathToApple(apples, myHead, gameBoard, true);
+        List<BoardPoint> nearestPathToApple = Main.getNearestPathToApple(apples, myHead, gameBoard, false);
         log.info("Nearest path is " + nearestPathToApple);
     }
 

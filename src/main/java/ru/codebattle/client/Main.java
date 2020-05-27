@@ -16,7 +16,7 @@ import static ru.codebattle.client.api.Direction.*;
 public class Main {
 
     private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/0i28858kqgje0hm6uqui?code=9205253768897784839&gameName=snakebattle";
-//    public static final int LIMIT_SIZE = 10;
+    //    public static final int LIMIT_SIZE = 10;
     public static int limitEvilCount = 9;
     public static final int STONE_RADIUS = 2;
     public static int evilCount = 0;
@@ -145,9 +145,9 @@ public class Main {
         Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, apple);
         int size = gameBoard.getMyBodyAndTail().size();
         if (
-                // Неактуально стало есть камни без ярости
+            // Неактуально стало есть камни без ярости
 //                size > LIMIT_SIZE ||
-                        headEvil) {
+                headEvil) {
             return pointsAroundMe.stream()
                     .filter(boardPoint -> gameBoard.getElementAt(boardPoint) == WALL)
                     .count() == 3;
@@ -202,22 +202,63 @@ public class Main {
         int myBodySize = gameBoard.getMyBodyAndTail().size();
         log.info("My length is " + myBodySize);
 
+        // Получаем точки, на которые могут следующим ходом попасть головы врагов
+        List<BoardPoint> allBoardPointEnemyHeadsAround = getAllBoardPointEnemyHeadsAround(gameBoard);
+        Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
+
+        // Если на клетку куда двигается моя голова могут попасть головы врагов,
+        // то убираем такие точки из целей и точек передвижения
+        Collection<BoardPoint> commonPoints = CollectionUtils.retainAll(pointsAroundMe, allBoardPointEnemyHeadsAround);
+
+        boolean isMyEnemyLongerThanI = false;
+        boolean isMyEnemyEvil = false;
+        if (!commonPoints.isEmpty()) {
+            // Находим голову вражеской змеи, с которой можем столкнуться
+            Optional<BoardPoint> any = gameBoard.getEnemyHeads().stream()
+                    .filter(head -> CollectionUtils.containsAny(getPointsAroundMe(gameBoard, head), pointsAroundMe))
+                    .findAny();
+            if (any.isPresent()) {
+                BoardPoint enemyHead = any.get();
+
+                // Если враг под таблеткой, то длину не посчитать
+                if (gameBoard.hasElementAt(enemyHead, ENEMY_HEAD_EVIL)) {
+                    isMyEnemyEvil = true;
+                } else {
+                    //Теперь нужно посчитать длину врага
+                    int enemyLength = getEnemyLength(gameBoard, enemyHead);
+                    log.info("Enemy length is " + enemyLength);
+
+                    // Если враг длиннее или под таблеткой, то убегаем от него
+                    if (enemyLength + 2 > myBodySize) {
+                        isMyEnemyLongerThanI = true;
+                    }
+                }
+            }
+        }
+
         // Если под таблеткой ярости, до добавить в цели врагов и камни
         if (headEvil) {
             allApples.addAll(enemyBodyAndTail);
             allApples.addAll(stones);
             // Добавляем в список клеток для движения врагов и камни
             log.info("В АТАКУ ...");
-        }
+
+            // Если враг под яростью и длиннее чем я, то убегаем
+            if (isMyEnemyEvil && isMyEnemyLongerThanI) {
+                allElements.removeAll(commonPoints);
+                allApples.removeAll(commonPoints);
+            }
+        } else {
         // Неактуально стало есть камни без ярости
-        else {
-//            // Если длина меньше, то не едим камни
+                    // Если длина меньше, то не едим камни
 //            if (myBodySize < LIMIT_SIZE) {
 //                barriers.addAll(stones);
 //            }
-            // Убрать из неразмеченных точек, точки на которые могут попасть головы врагов
-            List<BoardPoint> allBoardPointEnemyHeadsAround = getAllBoardPointEnemyHeadsAround(gameBoard);
-            allElements.removeAll(allBoardPointEnemyHeadsAround);
+            //Если мой враг злой или длиннее чем я, то тоже убегаем
+            if (isMyEnemyEvil || isMyEnemyLongerThanI) {
+                allElements.removeAll(commonPoints);
+                allApples.removeAll(commonPoints);
+            }
         }
 
         log.info("Apples are " + allApples);
@@ -256,6 +297,110 @@ public class Main {
         }
 
         return pathToOurApples;
+    }
+
+    // Получение длины вражеской змеи
+    private static int getEnemyLength(GameBoard gameBoard, BoardPoint enemyHead) {
+        BoardElement nextPoint = gameBoard.getElementAt(enemyHead);
+        // Минимальная длина змейки
+        int count = 2;
+        // Боюсь даже представить какой здесь будет цикл
+        BoardPoint boardPoint = enemyHead;
+        Direction direction = STOP;
+        switch (nextPoint) {
+            case ENEMY_HEAD_UP:
+                boardPoint = enemyHead.shiftBottom();
+                direction = DOWN;
+                break;
+            case ENEMY_HEAD_DOWN:
+                boardPoint = enemyHead.shiftTop();
+                direction = UP;
+                break;
+            case ENEMY_HEAD_LEFT:
+                boardPoint = enemyHead.shiftRight();
+                direction = RIGHT;
+                break;
+            case ENEMY_HEAD_RIGHT:
+                boardPoint = enemyHead.shiftLeft();
+                direction= LEFT;
+                break;
+            default:
+                break;
+        }
+        //Пока не доберемся до хвоста
+        while (!gameBoard.hasElementAt(boardPoint,
+                ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_LEFT)) {
+            BoardElement elementAt = gameBoard.getElementAt(boardPoint);
+            if (direction == DOWN) {
+                // Направление не меняется
+                if (elementAt == ENEMY_BODY_VERTICAL) {
+                    boardPoint = boardPoint.shiftBottom();
+                }
+
+                if (elementAt == ENEMY_BODY_LEFT_UP) {
+                    boardPoint = boardPoint.shiftLeft();
+                    direction = LEFT;
+                }
+
+                if (elementAt == ENEMY_BODY_RIGHT_UP) {
+                    boardPoint = boardPoint.shiftRight();
+                    direction = RIGHT;
+                }
+            }
+
+            if (direction == UP) {
+                // Направление не меняется
+                if (elementAt == ENEMY_BODY_VERTICAL) {
+                    boardPoint = boardPoint.shiftTop();
+                }
+
+                if (elementAt == ENEMY_BODY_LEFT_DOWN) {
+                    boardPoint = boardPoint.shiftLeft();
+                    direction = LEFT;
+                }
+
+                if (elementAt == ENEMY_BODY_RIGHT_DOWN) {
+                    boardPoint = boardPoint.shiftRight();
+                    direction = RIGHT;
+                }
+            }
+
+            if (direction == LEFT) {
+                // Направление не меняется
+                if (elementAt == ENEMY_BODY_HORIZONTAL) {
+                    boardPoint = boardPoint.shiftLeft();
+                }
+
+                if (elementAt == ENEMY_BODY_RIGHT_UP) {
+                    boardPoint = boardPoint.shiftTop();
+                    direction = UP;
+                }
+
+                if (elementAt == ENEMY_BODY_RIGHT_DOWN) {
+                    boardPoint = boardPoint.shiftBottom();
+                    direction = DOWN;
+                }
+            }
+
+            if (direction == RIGHT) {
+                // Направление не меняется
+                if (elementAt == ENEMY_BODY_HORIZONTAL) {
+                    boardPoint = boardPoint.shiftRight();
+                }
+
+                if (elementAt == ENEMY_BODY_LEFT_UP) {
+                    boardPoint = boardPoint.shiftTop();
+                    direction = UP;
+                }
+
+                if (elementAt == ENEMY_BODY_LEFT_DOWN) {
+                    boardPoint = boardPoint.shiftBottom();
+                    direction = DOWN;
+                }
+            }
+            count++;
+        }
+        return count;
     }
 
     private static List<BoardPoint> getAllBoardPointEnemyHeadsAround(GameBoard gameBoard) {
