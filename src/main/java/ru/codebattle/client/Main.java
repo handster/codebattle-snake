@@ -25,49 +25,34 @@ public class Main {
     public static void main(String[] args) throws URISyntaxException, IOException {
         SnakeBattleClient client = new SnakeBattleClient(SERVER_ADDRESS);
         client.run(gameBoard -> {
-            // Найти свою координату
+            // Найти свою голову
             BoardPoint myHead = gameBoard.getMyHead();
             log.info("My head is " + myHead);
             if (myHead == null) {
                 return new SnakeAction(false, STOP);
             }
-
-            // Пока собирать только яблоки
+            // Первоначальные цели
             List<BoardPoint> allApples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
-            boolean headEvil = false;
-            // Воткнуть проверку была ли съедена таблетка под действием другой таблетки
-            if (gameBoard.getElementAt(myHead) == HEAD_EVIL) {
-                // Если на месте таблеток ярости теперь моя голова, то увеличиваем счетчик
-                if (furyPills.contains(myHead)) {
-                    limitEvilCount += 10;
-                    log.info("Жадность до таблеток " + limitEvilCount);
-                }
-                furyPills = gameBoard.getFuryPills();
-                evilCount++;
-                if (evilCount <= limitEvilCount) {
-                    headEvil = true;
-//                    List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
-//                    apples.addAll(enemyBodyAndTail);
-//                    apples.addAll(gameBoard.findAllElements(STONE));
-                }
-            } else {
-                evilCount = 0;
-                limitEvilCount = 8;
-            }
-            log.info("Evil count is " + evilCount);
-            // Элементы через которые можно проложить путь
+
+            // Первоначальные элементы через которые можно проложить путь
             List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE);
 
-            // Проверка ярости и длины противника
-            modifyApplesAndPathPoints(allApples, myHead, gameBoard, headEvil, pathPoints);
+            // Проверям под таблеткой я или нет
+            boolean headEvil = isMyHeadEvil(gameBoard, myHead);
+
+            // Изменяем наши цели и точки пути в зависимости от наличия ярости, и длины врагов
+            modifyApplesAndPathPoints(allApples, pathPoints, myHead, gameBoard, headEvil);
+
+            //Отфильтровать яблоки в тупиках
+            allApples = getApplesWithoutBlockApples(allApples, gameBoard, headEvil);
 
             List<BoardPoint> nearestPathToApple = getNearestPathToApple(allApples, myHead, gameBoard, headEvil, pathPoints);
 
             log.info("Nearest path is " + nearestPathToApple);
-            // и можно ли в них идти
+
+            //TODO переработать этот блок
             if (nearestPathToApple.isEmpty()) {
                 System.out.println("Что-то пошло не так");
-                //TODO Проверить соседние поля, если там камень то идти туда
                 Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
                 List<BoardPoint> collect = pointsAroundMe.stream()
                         .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE,
@@ -99,6 +84,28 @@ public class Main {
         System.in.read();
 
         client.initiateExit();
+    }
+
+    private static boolean isMyHeadEvil(GameBoard gameBoard, BoardPoint myHead) {
+        boolean headEvil = false;
+
+        // Воткнуть проверку была ли съедена таблетка под действием другой таблетки
+        if (gameBoard.getElementAt(myHead) == HEAD_EVIL) {
+            // Если на месте таблеток ярости теперь моя голова, то увеличиваем счетчик
+            if (furyPills.contains(myHead)) {
+                limitEvilCount += 10;
+                log.info("Жадность до таблеток " + limitEvilCount);
+            }
+            furyPills = gameBoard.getFuryPills();
+            evilCount++;
+            if (evilCount <= limitEvilCount) {
+                headEvil = true;
+            }
+        } else {
+            evilCount = 0;
+            limitEvilCount = 8;
+        }
+        return headEvil;
     }
 
     public static boolean getAct(GameBoard gameBoard) {
@@ -143,14 +150,19 @@ public class Main {
     private static boolean getThreeWallsAround(GameBoard gameBoard, BoardPoint apple, boolean headEvil) {
         Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, apple);
         List<BoardPoint> myBodyAndTail = gameBoard.getMyBodyAndTail();
+        List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+        // Если под таблеткой, то убираем только цели в трех стенах
         if (headEvil) {
             return pointsAroundMe.stream()
                     .filter(boardPoint -> gameBoard.getElementAt(boardPoint) == WALL)
                     .count() == 3;
         }
 
+        // Добавляем к стенам камни, свое и вражеские тела
         return pointsAroundMe.stream()
-                .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, WALL, STONE) || myBodyAndTail.contains(boardPoint))
+                .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, WALL, STONE)
+                        || myBodyAndTail.contains(boardPoint)
+                        || enemyBodyAndTail.contains(boardPoint))
                 .count() == 3;
     }
 
@@ -181,11 +193,7 @@ public class Main {
     public static List<BoardPoint> getNearestPathToApple(List<BoardPoint> allApples, BoardPoint myHead,
                                                          GameBoard gameBoard, boolean headEvil,
                                                          List<BoardPoint> pathPoints) {
-
         List<BoardPoint> pathToOurApples = new ArrayList<>();
-
-        //Отфильтровать яблоки в тупиках
-        allApples = getApplesWithoutBlockApples(allApples, gameBoard, headEvil);
 
         // Добавляем в точки пути наши цели, иначе мы их не увидим
         pathPoints.addAll(allApples);
@@ -213,7 +221,6 @@ public class Main {
             settledNodes.addAll(currentNodes);
             if (CollectionUtils.containsAny(settledNodes, nodes)) {
                 List<Node> pathsToWin = (List<Node>) CollectionUtils.retainAll(settledNodes, nodes);
-//                log.info("path size is " + pathsToWin.size());
 
                 // Получаем более приоритетную цель
                 Node path = getPriorityNode(gameBoard, pathsToWin);
@@ -234,7 +241,7 @@ public class Main {
         // Если до нескольких объектов одинаковое расстояние, то выбирать таблетку
         // Если нет таблетки, то может хотя бы золото, ну а если уж ничего нет
         // будем есть яблоки
-        if ((pathsToWin.size() <= 1)) {
+        if ((pathsToWin.size() == 1)) {
             return pathsToWin.get(0);
         }
 
@@ -295,30 +302,30 @@ public class Main {
         return null;
     }
 
-    private static void modifyApplesAndPathPoints(List<BoardPoint> allApples, BoardPoint myHead, GameBoard gameBoard, boolean headEvil, List<BoardPoint> pathPoints) {
+    private static void modifyApplesAndPathPoints(List<BoardPoint> allApples, List<BoardPoint> pathPoints, BoardPoint myHead, GameBoard gameBoard, boolean headEvil) {
         // Враги
         List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
 
         // Камни
         List<BoardPoint> stones = gameBoard.findAllElements(STONE);
 
-        // Получаем длину тела
-        int myBodySize = gameBoard.getMyBodyAndTail().size();
-        log.info("My length is " + myBodySize);
-
         // Получаем точки, на которые могут следующим ходом попасть головы врагов
         List<BoardPoint> allBoardPointEnemyHeadsAround = getAllBoardPointEnemyHeadsAround(gameBoard);
+
+        // Получаем точки вокруг себя
         Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
 
-        // Если на клетку куда двигается моя голова могут попасть головы врагов,
-        // то убираем такие точки из целей и точек передвижения
+        // Получаем точку где можем стукнуться головами
         List<BoardPoint> commonPoints = (List<BoardPoint>) CollectionUtils.retainAll(pointsAroundMe, allBoardPointEnemyHeadsAround);
 
-        BoardPoint enemyHead = getEnemyHead(commonPoints, pointsAroundMe, gameBoard);
+        // Находим голову ближайшего врага
+        BoardPoint enemyHead = getNearestEnemyHead(commonPoints, pointsAroundMe, gameBoard);
+
+        int myBodySize = gameBoard.getMyBodyAndTail().size();
+
         boolean isMyEnemyEvil = isMyEnemyEvil(enemyHead, gameBoard);
         boolean isMyEnemyLongerThanI = isMyEnemyLongerThanI(isMyEnemyEvil, enemyHead, gameBoard);
-
-        // Если под таблеткой ярости, до добавить в цели врагов и камни
+//         Если под таблеткой ярости, до добавить в цели врагов и камни
         if (headEvil) {
             allApples.addAll(enemyBodyAndTail);
             allApples.addAll(stones);
@@ -326,18 +333,12 @@ public class Main {
 
             // TODO заменить на метод определения длины змеи по ее куску
             int totalEnemyEvilSnakesLength = getTotalEnemyEvilSnakesLength(gameBoard);
+            // Если враг тоже злой и длинней чем я, то убираем из целей и точек пути общие точки
             if (isMyEnemyEvil && totalEnemyEvilSnakesLength + 2 > myBodySize) {
                 pathPoints.removeAll(commonPoints);
                 allApples.removeAll(commonPoints);
-            } else {
-
             }
         } else {
-            // Неактуально стало есть камни без ярости
-            // Если длина меньше, то не едим камни
-//            if (myBodySize < LIMIT_SIZE) {
-//                barriers.addAll(stones);
-//            }
             //Если мой враг злой или длиннее чем я, то тоже убегаем
             if (isMyEnemyEvil || isMyEnemyLongerThanI) {
                 pathPoints.removeAll(commonPoints);
@@ -357,7 +358,7 @@ public class Main {
         return totalLength - reduce;
     }
 
-    private static BoardPoint getEnemyHead(List<BoardPoint> commonPoints, Set<BoardPoint> pointsAroundMe, GameBoard gameBoard) {
+    private static BoardPoint getNearestEnemyHead(List<BoardPoint> commonPoints, Set<BoardPoint> pointsAroundMe, GameBoard gameBoard) {
         if (!commonPoints.isEmpty()) {
             // Находим голову вражеской змеи, с которой можем столкнуться
             Optional<BoardPoint> any = gameBoard.getEnemyHeads().stream()
