@@ -415,7 +415,7 @@ public class Main {
                             allApples.remove(point);
                             // Удалить еще предыдущую точку
                             BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
-                            BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(myHead, longestSnake.getEnemyHead());
+                            BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(gameBoard, myHead, longestSnake.getEnemyHead());
                             pathPoints.remove(pointBetweenAnotherPointAndMyHead);
                             allApples.remove(pointBetweenAnotherPointAndMyHead);
                             pathPoints.remove(nextPointToEnemyHeadSnake);
@@ -429,7 +429,7 @@ public class Main {
                         allApples.remove(point);
                         // Удалить еще предыдущую точку
                         BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
-                        BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(myHead, longestSnake.getEnemyHead());
+                        BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(gameBoard, myHead, longestSnake.getEnemyHead());
                         pathPoints.remove(pointBetweenAnotherPointAndMyHead);
                         allApples.remove(pointBetweenAnotherPointAndMyHead);
                         pathPoints.remove(nextPointToEnemyHeadSnake);
@@ -446,16 +446,24 @@ public class Main {
         }
     }
 
-    private static BoardPoint getNextPointToEnemyHeadSnake(BoardPoint myHead, BoardPoint enemyHead) {
+    private static BoardPoint getNextPointToEnemyHeadSnake(GameBoard gameBoard, BoardPoint myHead, BoardPoint enemyHead) {
         int myHeadX = myHead.getX();
         int myHeadY = myHead.getY();
         int x = enemyHead.getX();
         int y = enemyHead.getY();
+        BoardPoint result = null;
+        BoardPoint pointBetweenAnotherPointAndMyHead = null;
         if (Math.abs(myHeadX - x) == 1) {
-            return new BoardPoint(x, myHeadY);
+            result = new BoardPoint(x, myHeadY);
+            pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(result, enemyHead);
         }
         if (Math.abs(myHeadY - y) == 1) {
-            return new BoardPoint(myHeadX, y);
+            result = new BoardPoint(myHeadX, y);
+            pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(result, enemyHead);
+        }
+
+        if (gameBoard.getElementAt(pointBetweenAnotherPointAndMyHead) != WALL) {
+            return result;
         }
         return enemyHead;
     }
