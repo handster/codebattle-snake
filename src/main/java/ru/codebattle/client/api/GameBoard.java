@@ -77,7 +77,8 @@ public class GameBoard {
     }
 
     public List<BoardPoint> getEnemyHeads() {
-        return findAllElements(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP, ENEMY_HEAD_EVIL);
+        return findAllElements(ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT,
+                ENEMY_HEAD_UP, ENEMY_HEAD_EVIL, ENEMY_HEAD_DEAD);
     }
 
     public List<BoardPoint> getEnemyTails() {

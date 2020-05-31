@@ -40,6 +40,7 @@ public class Main {
             // Первоначальные элементы через которые можно проложить путь
             List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
 
+
             // Проверям под таблеткой я или нет
             boolean headEvil = isMyHeadEvil(gameBoard, myHead);
 
@@ -137,10 +138,12 @@ public class Main {
         }
         Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myTail);
         List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+        List<BoardPoint> myBodyAndTail = gameBoard.getMyBodyAndTail();
         return pointsAroundMe.size() == 3 ||
                 pointsAroundMe.stream()
                         .filter(boardPoint -> (gameBoard.getElementAt(boardPoint) == WALL ||
-                                enemyBodyAndTail.contains(boardPoint)))
+                                enemyBodyAndTail.contains(boardPoint) ||
+                                myBodyAndTail.contains(boardPoint)))
                         .count() == 3;
     }
 
@@ -167,7 +170,7 @@ public class Main {
         }
 
         log.info("Evil count " + (evilCount) + " <= " + limitEvilCount);
-        return evilCount + 1 <= limitEvilCount;
+        return evilCount + 2 <= limitEvilCount;
     }
 
     public static boolean getAct(GameBoard gameBoard) {
@@ -357,42 +360,94 @@ public class Main {
         // Камни
         List<BoardPoint> stones = gameBoard.findAllElements(STONE);
 
-        //TODO написать обработку общих точек
-//        // Получаем точки, на которые могут следующим ходом попасть головы врагов
-//        List<BoardPoint> allBoardPointEnemyHeadsAround = getAllBoardPointEnemyHeadsAround(gameBoard);
-//
-//        // Получаем точки вокруг себя
-//        Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
-//        pointsAroundMe.removeAll(gameBoard.getEnemyBodyAndTail());
-//
-//        // Получаем точку где можем стукнуться головами
-//        List<BoardPoint> commonPoints = (List<BoardPoint>) CollectionUtils.retainAll(pointsAroundMe, allBoardPointEnemyHeadsAround);
-//
-//
-//        boolean isMyEnemyEvil = gameBoard.getElementAt(enemyHead) == ENEMY_HEAD_EVIL;
-//        boolean isMyEnemyLongerThanI = isMyEnemyLongerThanI(isMyEnemyEvil, enemyHead, gameBoard);
-////         Если под таблеткой ярости, до добавить в цели врагов и камни
+        // Получаем головы всех змей на карте
+        Set<BoardPoint> enemyHeads = getAllTargetSnakes(gameBoard).stream()
+                .map(SnakeTarget::getEnemyHead)
+                .collect(Collectors.toSet());
+
+        // Получаем точки на расстоянии 1 от моей головы
+        Set<BoardPoint> pointsOnDistance = getPointsOnDistance(gameBoard, myHead, 1);
+        for (BoardPoint point : pointsOnDistance) {
+            Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, point);
+            List<BoardPoint> commonPoints = (List<BoardPoint>) CollectionUtils.retainAll(pointsAroundMe, enemyHeads);
+            // Если есть головы
+            if (!commonPoints.isEmpty()) {
+                if (headEvil) {
+                    List<BoardPoint> evilHeadSnakes = commonPoints.stream()
+                            .filter(enemyHead -> gameBoard.getElementAt(enemyHead) == ENEMY_HEAD_EVIL)
+                            .collect(Collectors.toList());
+                    if (!evilHeadSnakes.isEmpty()) {
+                        SnakeTarget longestSnake = getLongestSnake(gameBoard, evilHeadSnakes);
+                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                            pathPoints.remove(point);
+                        }
+                    }
+                } else {
+                    SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
+                    if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                        pathPoints.remove(point);
+                    }
+                }
+            }
+        }
+        // Смотрим, чтобы их голов не было на соседних клетках
+        // Если есть, то берем самую длинную из них
+        // Если я не под таблеткой и она длиннее чем я, то убираем такие точки из точек пути
+        // Если я под таблеткой и она под таблеткой и длиннее меня, то тоже убираем
+
+        // Получаем точки на расстоянии 2 от моей головы
+        pointsOnDistance = getPointsOnDistance(gameBoard, myHead, 2);
+        for (BoardPoint point : pointsOnDistance) {
+            Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, point);
+            List<BoardPoint> commonPoints = (List<BoardPoint>) CollectionUtils.retainAll(pointsAroundMe, enemyHeads);
+            // Если есть головы
+            if (!commonPoints.isEmpty()) {
+                if (headEvil) {
+                    List<BoardPoint> evilHeadSnakes = commonPoints.stream()
+                            .filter(enemyHead -> gameBoard.getElementAt(enemyHead) == ENEMY_HEAD_EVIL)
+                            .collect(Collectors.toList());
+                    if (!evilHeadSnakes.isEmpty()) {
+                        SnakeTarget longestSnake = getLongestSnake(gameBoard, evilHeadSnakes);
+                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                            pathPoints.remove(point);
+                        }
+                    }
+                } else {
+                    SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
+                    if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                        pathPoints.remove(point);
+                    }
+                }
+            }
+        }
+
         if (headEvil) {
             allApples.addAll(enemyBodyAndTail);
             allApples.addAll(stones);
             log.info("В АТАКУ ...");
-
-//            SnakeTarget enemySnake = getEnemySnakeByHead(gameBoard, enemyHead);
-//
-//            int myBodyLength = gameBoard.getMyBodyAndTail().size();
-//
-//            // Если враг тоже злой и длинней чем я, то убираем из целей и точек пути общие точки
-//            if (isMyEnemyEvil && enemySnake != null && enemySnake.getLength() + 2 > myBodyLength) {
-//                pathPoints.removeAll(commonPoints);
-//                allApples.removeAll(commonPoints);
-//            }
-        } else {
-//            //Если мой враг злой или длиннее чем я, то тоже убегаем
-//            if (isMyEnemyEvil || isMyEnemyLongerThanI) {
-//                pathPoints.removeAll(commonPoints);
-//                allApples.removeAll(commonPoints);
-//            }
         }
+    }
+
+    private static SnakeTarget getLongestSnake(GameBoard gameBoard, List<BoardPoint> evilSnakes) {
+        SnakeTarget maxSnakeTarget = getEnemySnakeByHead(gameBoard, evilSnakes.get(0));
+        for (BoardPoint point : evilSnakes) {
+            if (getEnemySnakeByHead(gameBoard, point).getLength() > maxSnakeTarget.getLength()) {
+                maxSnakeTarget = getEnemySnakeByHead(gameBoard, point);
+            }
+        }
+        return maxSnakeTarget;
+    }
+
+    private static Set<BoardPoint> getPointsOnDistance(GameBoard gameBoard, BoardPoint myHead, int distance) {
+        Set<BoardPoint> points = new HashSet<>();
+        points.add(myHead.shiftLeft(distance));
+        points.add(myHead.shiftRight(distance));
+        points.add(myHead.shiftTop(distance));
+        points.add(myHead.shiftBottom(distance));
+        return points.stream()
+                .filter(point1 -> !point1.isOutOfBoard(gameBoard.size()))
+                .filter(point -> gameBoard.getElementAt(point) != WALL)
+                .collect(Collectors.toSet());
     }
 
     private static SnakeTarget getEnemySnakeByHead(GameBoard gameBoard, BoardPoint enemyHead) {
@@ -420,25 +475,6 @@ public class Main {
             }
         }
         return null;
-    }
-
-    private static boolean isMyEnemyLongerThanI(boolean isMyEnemyEvil, BoardPoint enemyHead, GameBoard gameBoard) {
-        if (enemyHead == null) {
-            return false;
-        }
-
-        if (!isMyEnemyEvil) {
-            //Теперь нужно посчитать длину врага
-            int enemyLength = getSnakeTarget(gameBoard, enemyHead).getSnakeBody().size();
-//            log.info("Enemy length is " + enemyLength);
-
-            // Если враг длиннее или под таблеткой, то убегаем от него
-            int myBodySize = gameBoard.getMyBodyAndTail().size();
-            if (enemyLength + 2 > myBodySize) {
-                return true;
-            }
-        }
-        return false;
     }
 
     // Получение длины вражеской змеи
@@ -473,6 +509,8 @@ public class Main {
         snakeBody.add(boardPoint);
 
         List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
+        //TODO косяк в игре иногда голова противника и твоя совпадают, сразу же когда вы столкнулись
+        enemyHeads.add(gameBoard.getMyHead());
         //Пока не доберемся до головы
         BoardElement elementAt;
         while (!enemyHeads.contains(boardPoint)) {
