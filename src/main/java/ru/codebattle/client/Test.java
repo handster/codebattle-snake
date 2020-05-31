@@ -17,6 +17,7 @@ import static ru.codebattle.client.api.BoardElement.*;
 @Slf4j
 public class Test {
     public static final int LIMIT_SIZE = 10;
+
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
@@ -83,21 +84,25 @@ public class Test {
                 "☼☼  ║   ☼   ☼     ☼    ☼   ☼      ☼\n" +
                 "☼☼  ║      ☼    ☼  ☼         ☼    ☼\n" +
                 "☼☼  ║ ☼   ☼    ☼               ☼  ☼\n" +
-                "☼#╔►║☼   ☼    ☼         ☼   ☼     ☼\n" +
-                "☼☼╚═╝           ☼   ☼     ☼®      ☼\n" +
-                "☼☼  ☼   ☼  ☼    ☼     ☼           ☼\n" +
-                "☼☼    ☼   ☼☼  ☼           ☼  ☼  ☼○☼\n" +
+                "☼#  ║☼   ☼    ☼         ☼   ☼     ☼\n" +
+                "☼☼  ╚══════╕    ☼   ☼     ☼®      ☼\n" +
+                "☼☼  ☼   ☼  ▼    ☼     ☼           ☼\n" +
+                "☼☼    ☼   ☼   ☼           ☼  ☼  ☼○☼\n" +
                 "☼☼×────────♣     ®○     ®         ☼\n" +
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n");
 
+        GameBoard testGameBoard = gameBoard2;
 
         // Первоначальные цели
-        List<BoardPoint> allApples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
+        List<BoardPoint> allApples = testGameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
 
         // Первоначальные элементы через которые можно проложить путь
-        List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
-        Main.modifyApplesAndPathPoints(allApples, pathPoints, gameBoard.getMyHead(), gameBoard, false);
-        List<BoardPoint> pathToAim = Main.getPathToAim(gameBoard, gameBoard.getMyHead(), allApples, pathPoints,
+        List<BoardPoint> pathPoints = testGameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
+        BoardPoint myHead = testGameBoard.getMyHead();
+        System.out.println("My head is " + myHead);
+
+        Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, true);
+        List<BoardPoint> pathToAim = Main.getPathToAim(testGameBoard, myHead, allApples, pathPoints,
                 new ArrayList<>(), new ArrayList<>(), null);
         System.out.println(pathToAim);
     }
