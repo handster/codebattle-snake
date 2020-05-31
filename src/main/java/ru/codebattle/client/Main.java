@@ -132,11 +132,11 @@ public class Main {
     }
 
     private static boolean isMyTailInWall(GameBoard gameBoard, BoardPoint myTail) {
-        Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myTail);
-        List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
         if (myTail == null) {
             return true;
         }
+        Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myTail);
+        List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
         return pointsAroundMe.size() == 3 ||
                 pointsAroundMe.stream()
                         .filter(boardPoint -> (gameBoard.getElementAt(boardPoint) == WALL ||
