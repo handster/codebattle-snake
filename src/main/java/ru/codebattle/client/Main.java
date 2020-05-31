@@ -462,7 +462,7 @@ public class Main {
             pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(result, enemyHead);
         }
 
-        if (gameBoard.getElementAt(pointBetweenAnotherPointAndMyHead) != WALL) {
+        if (pointBetweenAnotherPointAndMyHead != null && gameBoard.getElementAt(pointBetweenAnotherPointAndMyHead) != WALL) {
             return result;
         }
         return enemyHead;
