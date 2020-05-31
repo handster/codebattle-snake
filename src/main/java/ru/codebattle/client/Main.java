@@ -413,6 +413,13 @@ public class Main {
                         if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
                             allApples.remove(point);
+                            // Удалить еще предыдущую точку
+                            BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
+                            BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(myHead, longestSnake.getEnemyHead());
+                            pathPoints.remove(pointBetweenAnotherPointAndMyHead);
+                            allApples.remove(pointBetweenAnotherPointAndMyHead);
+                            pathPoints.remove(nextPointToEnemyHeadSnake);
+                            allApples.remove(nextPointToEnemyHeadSnake);
                         }
                     }
                 } else {
