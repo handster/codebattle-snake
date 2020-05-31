@@ -422,8 +422,11 @@ public class Main {
                         allApples.remove(point);
                         // Удалить еще предыдущую точку
                         BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
+                        BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(myHead, longestSnake.getEnemyHead());
                         pathPoints.remove(pointBetweenAnotherPointAndMyHead);
                         allApples.remove(pointBetweenAnotherPointAndMyHead);
+                        pathPoints.remove(nextPointToEnemyHeadSnake);
+                        allApples.remove(nextPointToEnemyHeadSnake);
                     }
                 }
             }
@@ -434,6 +437,20 @@ public class Main {
             allApples.addAll(stones);
             log.info("В АТАКУ ...");
         }
+    }
+
+    private static BoardPoint getNextPointToEnemyHeadSnake(BoardPoint myHead, BoardPoint enemyHead) {
+        int myHeadX = myHead.getX();
+        int myHeadY = myHead.getY();
+        int x = enemyHead.getX();
+        int y = enemyHead.getY();
+        if (Math.abs(myHeadX - x) == 1) {
+            return new BoardPoint(x, myHeadY);
+        }
+        if (Math.abs(myHeadY - y) == 1) {
+            return new BoardPoint(myHeadX, y);
+        }
+        return enemyHead;
     }
 
     private static BoardPoint getPointBetweenAnotherPointAndMyHead(BoardPoint point, BoardPoint myHead) {
