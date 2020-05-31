@@ -123,6 +123,8 @@ public class Main {
                 pathPoints.remove(myAim);
                 allApples.remove(myAim);
                 log.info("Gameboard когда попали в тупик " + gameBoard.getBoardString());
+            } else {
+                pathFromHeadToApple.add(myAim);
             }
             pathPoints.addAll(pathFromHeadToApple);
         }
