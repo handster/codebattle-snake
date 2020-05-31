@@ -380,12 +380,14 @@ public class Main {
                         SnakeTarget longestSnake = getLongestSnake(gameBoard, evilHeadSnakes);
                         if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
+                            allApples.remove(point);
                         }
                     }
                 } else {
                     SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
                     if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                         pathPoints.remove(point);
+                        allApples.remove(point);
                     }
                 }
             }
@@ -410,12 +412,18 @@ public class Main {
                         SnakeTarget longestSnake = getLongestSnake(gameBoard, evilHeadSnakes);
                         if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
+                            allApples.remove(point);
                         }
                     }
                 } else {
                     SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
                     if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                         pathPoints.remove(point);
+                        allApples.remove(point);
+                        // Удалить еще предыдущую точку
+                        BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
+                        pathPoints.remove(pointBetweenAnotherPointAndMyHead);
+                        allApples.remove(pointBetweenAnotherPointAndMyHead);
                     }
                 }
             }
@@ -426,6 +434,29 @@ public class Main {
             allApples.addAll(stones);
             log.info("В АТАКУ ...");
         }
+    }
+
+    private static BoardPoint getPointBetweenAnotherPointAndMyHead(BoardPoint point, BoardPoint myHead) {
+        int x = point.getX();
+        int y = point.getY();
+        int myHeadX = myHead.getX();
+        int myHeadY = myHead.getY();
+        if (x == myHeadX) {
+            if (y > myHeadY) {
+                return myHead.shiftBottom();
+            } else {
+                return myHead.shiftTop();
+            }
+        }
+
+        if (y == myHeadY) {
+            if (x > myHeadX) {
+                return myHead.shiftRight();
+            } else {
+                return myHead.shiftLeft();
+            }
+        }
+        return point;
     }
 
     private static SnakeTarget getLongestSnake(GameBoard gameBoard, List<BoardPoint> evilSnakes) {
@@ -511,6 +542,8 @@ public class Main {
         List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
         //TODO косяк в игре иногда голова противника и твоя совпадают, сразу же когда вы столкнулись
         enemyHeads.add(gameBoard.getMyHead());
+        enemyHeads.addAll(gameBoard.getMyBodyAndTail());
+
         //Пока не доберемся до головы
         BoardElement elementAt;
         while (!enemyHeads.contains(boardPoint)) {
