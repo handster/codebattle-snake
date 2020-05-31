@@ -5,6 +5,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import ru.codebattle.client.api.BoardPoint;
 import ru.codebattle.client.api.GameBoard;
 import ru.codebattle.client.api.Node;
+import ru.codebattle.client.api.SnakeTarget;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,50 +20,49 @@ public class Test {
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
-                        "☼☼            ☼       ○   ☼      ●☼\n" +
-                        "☼☼   ☼   ☼      ☼     ☼ ☼    ☼    ☼\n" +
-                        "☼☼   ☼    $ ☼      ☼              ☼\n" +
-                        "☼#    ☼  ☼    ☼  ☼   ☼    ☼   ☼   ☼\n" +
-                        "☼☼        ☼    ☼    ☼    ☼ ® ☼    ☼\n" +
-                        "☼☼   ☼ ☼        ☼  ☼    ☼         ☼\n" +
-                        "☼☼      ☼   ☼          ☼   ☼      ☼\n" +
-                        "☼☼   ☼   ☼        ☼       ☼   ☼   ☼\n" +
-                        "☼#   ☼☼       ☼   ○  ☼       ☼    ☼\n" +
-                        "☼☼   ☼  ○® ☼   ☼    ☼   ☼   ☼     ☼\n" +
-                        "☼☼      ☼   ☼   ☼      ☼   ☼      ☼\n" +
-                        "☼☼   ☼           ☼    ☼        ○  ☼\n" +
-                        "☼☼        ☼   ☼          ☼    ☼   ☼\n" +
-                        "☼#   ☼☼ ○  ☼   ☼   ☼    ☼    ☼    ☼\n" +
-                        "☼☼     ☼    ☼       ☼       ☼     ☼\n" +
-                        "☼☼           ☼   ☼   ☼    ☼       ☼\n" +
-                        "☼☼       ☼      ◄╗☼   ☼    ☼      ☼\n" +
-                        "☼☼     ☼       ☼○╚╗╔═══╗    ☼    ○☼\n" +
-                        "☼#    ☼    ☼    ☼ ╚╝☼  ║☼  ○      ☼\n" +
-                        "☼☼   ☼    ☼      ☼   ☼ ║          ☼\n" +
-                        "☼☼   ○       ☼    ☼   ♣╙  ☼       ☼\n" +
-                        "☼☼      ☼   ☼       ×─┘☼○  ☼      ☼\n" +
-                        "☼☼     ☼   ☼   ☼    ☼   ☼         ☼\n" +
-                        "☼#    ☼       ☼    ○     ☼        ☼\n" +
-                        "☼☼   ☼   ☼       ☼    ☼   ☼       ☼\n" +
-                        "☼☼      ☼   ☼     ☼    ☼   ☼      ☼\n" +
-                        "☼☼         ☼    ☼  ☼         ☼    ☼\n" +
-                        "☼☼    ☼   ☼    ☼               ☼  ☼\n" +
-                        "☼#   ☼   ☼    ☼     ○   ☼   ☼     ☼\n" +
-                        "☼☼              ☼   ☼     ☼       ☼\n" +
-                        "☼☼  ☼   ☼  ☼    ☼     ☼           ☼\n" +
-                        "☼☼    ☼●  ☼☼  ☼           ☼  ☼  ☼ ☼\n" +
-                        "☼☼       ○                        ☼\n" +
+                        "☼☼                              ○ ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼#   ☼☼☼   ☼☼☼    ☼#   ☼☼☼   ☼☼☼  ☼\n" +
+                        "☼☼  ○☼       ☼      ┌┐ ☼       ☼  ☼\n" +
+                        "☼☼○  ☼ ●     ☼      ¤│ ☼   ●   ☼  ☼\n" +
+                        "☼☼                   │    ○       ☼\n" +
+                        "☼☼     ●             └─┐          ☼\n" +
+                        "☼☼                     └──────>   ☼\n" +
+                        "☼#   ☼ ● ● ● ☼    ☼#   ☼ ● ● ● ☼ ®☼\n" +
+                        "☼☼ ○ ☼       ☼   ○     ☼       ☼  ☼\n" +
+                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
+                        "☼☼   ○                            ☼\n" +
+                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
+                        "☼☼   ☼       ☼         ☼       ☼  ☼\n" +
+                        "☼#  ○☼ ● ● ● ☼    ☼#   ☼   ● ● ☼  ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼     ●                 ○   ●    ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼   ☼ ●   ● ☼         ☼     ● ☼  ☼\n" +
+                        "☼☼   ☼       ☼         ☼       ☼  ☼\n" +
+                        "☼#   ☼☼☼   ☼☼☼    ☼#   ☼☼☼   ☼☼☼  ☼\n" +
+                        "☼☼                                ☼\n" +
+                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼ ○ ☼☼☼  ☼\n" +
+                        "☼☼   ☼ ○  ▲ ○☼╓        ☼       ☼  ☼\n" +
+                        "☼☼  ○☼    ║● ☼║        ☼       ☼  ☼\n" +
+                        "☼☼        ║╔══╝         ●      ●● ☼\n" +
+                        "☼#        ║║      ☼#     ●        ☼\n" +
+                        "☼☼       ╔╝║                      ☼\n" +
+                        "☼☼   ☼   ╚═╝ ☼         ☼ ●○    ☼  ☼\n" +
+                        "☼☼   ☼       ☼         ☼      ®☼  ☼\n" +
+                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
+                        "☼☼  ○                             ☼\n" +
+                        "☼☼                                ☼\n" +
                         "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼");
-        System.out.println(gameBoard);
-        BoardPoint myHead = gameBoard.getMyHead();
-        log.info("My head is " + myHead);
-        List<BoardPoint> apples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
-        List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE);
-        List<BoardPoint> nearestPathToApple = Main.getNearestPathToApple(apples, myHead, gameBoard, false, pathPoints);
-        log.info("Nearest path is " + nearestPathToApple);
-        boolean act = Main.getAct(gameBoard);
-        int totalEnemyEvilSnakesLength = Main.getTotalEnemyEvilSnakesLength(gameBoard);
-        System.out.println("total " + totalEnemyEvilSnakesLength);
-        System.out.println(act);
+//        final GameBoard testGameBoard = gameBoard3;
+
+        // Первоначальные цели
+        List<BoardPoint> allApples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
+
+        // Первоначальные элементы через которые можно проложить путь
+        List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
+        List<BoardPoint> pathToAim = Main.getPathToAim(gameBoard, gameBoard.getMyHead(), allApples, pathPoints,
+                new ArrayList<>(), new ArrayList<>(), gameBoard.getMyTail().get(0));
+        System.out.println(pathToAim);
     }
 }

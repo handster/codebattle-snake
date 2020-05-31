@@ -6,22 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 @Data
 public class SnakeTarget {
-    private BoardPoint head;
-    private BoardPoint target;
-    private List<BoardPoint> snakeLeftBody = new ArrayList<>();
-    private List<BoardPoint> snakeRightBody = new ArrayList<>();
+    private List<BoardPoint> snakeBody = new ArrayList<>();
 
-    public SnakeTarget(BoardPoint target) {
-        this.target = target;
-        snakeLeftBody.add(target);
-        snakeRightBody.add(target);
+    public SnakeTarget(List<BoardPoint> snakeBody) {
+        this.snakeBody = snakeBody;
     }
 
-    public void addPieceToLeft(BoardPoint boardPoint) {
-        snakeLeftBody.add(boardPoint);
+    public BoardPoint getEnemyHead() {
+        return snakeBody.get(snakeBody.size() - 1);
     }
 
-    public void addPieceToRight(BoardPoint boardPoint) {
-        snakeRightBody.add(boardPoint);
+    public int getLength() {
+        return snakeBody.size();
     }
 }
