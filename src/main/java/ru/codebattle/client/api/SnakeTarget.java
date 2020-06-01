@@ -19,4 +19,8 @@ public class SnakeTarget {
     public int getLength() {
         return snakeBody.size();
     }
+
+    public int getDistanceToTail(BoardPoint point) {
+        return snakeBody.indexOf(point);
+    }
 }
