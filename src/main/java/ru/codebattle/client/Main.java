@@ -117,7 +117,8 @@ public class Main {
 
     public static List<BoardPoint> getPathToAim(GameBoard gameBoard, BoardPoint myHead, List<BoardPoint> allApples, List<BoardPoint> pathPoints, List<BoardPoint> pathFromAppleToTail, List<BoardPoint> pathFromHeadToApple, BoardPoint myTail) {
         BoardPoint myAim;
-        while (pathFromAppleToTail.isEmpty()) {
+        // Пробуем два раза построить путь, если не получилось, идем куда уж идется
+        for (int i = 0; i < 2; i++) {
             // Получаем путь до яблока
             pathFromHeadToApple = getNearestPathToApple(allApples, myHead, gameBoard, pathPoints);
             log.info("Первый путь до цели " + pathFromHeadToApple);
@@ -137,9 +138,11 @@ public class Main {
                 log.info("Gameboard когда попали в тупик " + gameBoard.getBoardString());
             } else {
                 pathFromHeadToApple.add(myAim);
+                return pathFromHeadToApple;
             }
             pathPoints.addAll(pathFromHeadToApple);
         }
+
         return pathFromHeadToApple;
     }
 
@@ -397,10 +400,20 @@ public class Main {
                         }
                     }
                 } else {
-                    SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
-                    if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                    // Если есть злые
+                    List<BoardPoint> evilHeadSnakes = commonPoints.stream()
+                            .filter(enemyHead -> gameBoard.getElementAt(enemyHead) == ENEMY_HEAD_EVIL)
+                            .collect(Collectors.toList());
+                    // То убираем точки
+                    if (!evilHeadSnakes.isEmpty()) {
                         pathPoints.remove(point);
                         allApples.remove(point);
+                    } else {
+                        SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
+                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                            pathPoints.remove(point);
+                            allApples.remove(point);
+                        }
                     }
                 }
             }
@@ -436,17 +449,30 @@ public class Main {
                         }
                     }
                 } else {
-                    SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
-                    if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                    // Если есть злые
+                    List<BoardPoint> evilHeadSnakes = commonPoints.stream()
+                            .filter(enemyHead -> gameBoard.getElementAt(enemyHead) == ENEMY_HEAD_EVIL)
+                            .collect(Collectors.toList());
+                    // То убираем точки
+                    if (!evilHeadSnakes.isEmpty()) {
                         pathPoints.remove(point);
                         allApples.remove(point);
-                        // Удалить еще предыдущую точку
                         BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
-                        BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(gameBoard, myHead, longestSnake.getEnemyHead());
                         pathPoints.remove(pointBetweenAnotherPointAndMyHead);
                         allApples.remove(pointBetweenAnotherPointAndMyHead);
-                        pathPoints.remove(nextPointToEnemyHeadSnake);
-                        allApples.remove(nextPointToEnemyHeadSnake);
+                    } else {
+                        SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
+                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                            pathPoints.remove(point);
+                            allApples.remove(point);
+                            // Удалить еще предыдущую точку
+                            BoardPoint pointBetweenAnotherPointAndMyHead = getPointBetweenAnotherPointAndMyHead(point, myHead);
+                            BoardPoint nextPointToEnemyHeadSnake = getNextPointToEnemyHeadSnake(gameBoard, myHead, longestSnake.getEnemyHead());
+                            pathPoints.remove(pointBetweenAnotherPointAndMyHead);
+                            allApples.remove(pointBetweenAnotherPointAndMyHead);
+                            pathPoints.remove(nextPointToEnemyHeadSnake);
+                            allApples.remove(nextPointToEnemyHeadSnake);
+                        }
                     }
                 }
             }
