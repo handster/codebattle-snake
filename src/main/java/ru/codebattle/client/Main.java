@@ -49,6 +49,8 @@ public class Main {
             // Изменяем наши цели и точки пути в зависимости от наличия ярости, и длины врагов
             modifyApplesAndPathPoints(allApples, pathPoints, myHead, gameBoard, headEvil);
 
+            //TODO написать атаку врагов
+            modifyPointsToAttackEnemies(allApples, pathPoints, myHead, gameBoard, headEvil);
             log.info("Время модификации точек " + (System.currentTimeMillis() - time));
             time = System.currentTimeMillis();
 
@@ -102,6 +104,12 @@ public class Main {
         System.in.read();
 
         client.initiateExit();
+    }
+
+    //Логика атаки врагов, когда мы под таблеткой
+    private static void modifyPointsToAttackEnemies(List<BoardPoint> allApples, List<BoardPoint> pathPoints,
+                                                    BoardPoint myHead, GameBoard gameBoard, boolean headEvil) {
+
     }
 
     private static BoardPoint getMyTailBoardPoint(GameBoard gameBoard) {
@@ -376,6 +384,13 @@ public class Main {
         // Камни
         List<BoardPoint> stones = gameBoard.findAllElements(STONE);
 
+        if (headEvil) {
+            allApples.addAll(enemyBodyAndTail);
+            allApples.addAll(stones);
+            pathPoints.addAll(enemyBodyAndTail);
+            pathPoints.addAll(stones);
+            log.info("В АТАКУ ...");
+        }
         // Получаем головы всех змей на карте
         Set<BoardPoint> enemyHeads = getAllTargetSnakes(gameBoard).stream()
                 .map(SnakeTarget::getEnemyHead)
@@ -476,12 +491,6 @@ public class Main {
                     }
                 }
             }
-        }
-
-        if (headEvil) {
-            allApples.addAll(enemyBodyAndTail);
-            allApples.addAll(stones);
-            log.info("В АТАКУ ...");
         }
     }
 
