@@ -22,6 +22,7 @@ public class Main {
     public static final int STONE_RADIUS = 2;
     public static int evilCount = 0;
     public static List<BoardPoint> furyPills = new ArrayList<>();
+    public static long time = System.currentTimeMillis();
 
     public static void main(String[] args) throws URISyntaxException, IOException {
         SnakeBattleClient client = new SnakeBattleClient(SERVER_ADDRESS);
@@ -40,12 +41,16 @@ public class Main {
             // Первоначальные элементы через которые можно проложить путь
             List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
 
-
             // Проверям под таблеткой я или нет
             boolean headEvil = isMyHeadEvil(gameBoard, myHead);
 
+            time = System.currentTimeMillis();
+
             // Изменяем наши цели и точки пути в зависимости от наличия ярости, и длины врагов
             modifyApplesAndPathPoints(allApples, pathPoints, myHead, gameBoard, headEvil);
+
+            log.info("Время модификации точек " + (System.currentTimeMillis() - time));
+            time = System.currentTimeMillis();
 
             //Отфильтровать яблоки в тупиках
             allApples = getApplesWithoutBlockApples(allApples, gameBoard, headEvil);
@@ -53,17 +58,12 @@ public class Main {
             List<BoardPoint> pathFromAppleToTail = new ArrayList<>();
 
             List<BoardPoint> pathFromHeadToApple = new ArrayList<>();
-            BoardPoint myAim;
-            List<BoardPoint> myTailList = gameBoard.getMyTail();
-            BoardPoint myTail;
-            if (myTailList.isEmpty()) {
-                myTail = null;
-            } else {
-                myTail = myTailList.get(0);
-            }
+            BoardPoint myTail = getMyTailBoardPoint(gameBoard);
 
             pathFromHeadToApple = getPathToAim(gameBoard, myHead, allApples, pathPoints, pathFromAppleToTail, pathFromHeadToApple, myTail);
 
+            log.info("Время поиска пути " + (System.currentTimeMillis() - time));
+            time = System.currentTimeMillis();
 
             log.info("Nearest path is " + pathFromHeadToApple);
 
@@ -104,6 +104,17 @@ public class Main {
         client.initiateExit();
     }
 
+    private static BoardPoint getMyTailBoardPoint(GameBoard gameBoard) {
+        List<BoardPoint> myTailList = gameBoard.getMyTail();
+        BoardPoint myTail;
+        if (myTailList.isEmpty()) {
+            myTail = null;
+        } else {
+            myTail = myTailList.get(0);
+        }
+        return myTail;
+    }
+
     public static List<BoardPoint> getPathToAim(GameBoard gameBoard, BoardPoint myHead, List<BoardPoint> allApples, List<BoardPoint> pathPoints, List<BoardPoint> pathFromAppleToTail, List<BoardPoint> pathFromHeadToApple, BoardPoint myTail) {
         BoardPoint myAim;
         while (pathFromAppleToTail.isEmpty()) {
@@ -139,11 +150,13 @@ public class Main {
         Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myTail);
         List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
         List<BoardPoint> myBodyAndTail = gameBoard.getMyBodyAndTail();
+        List<BoardPoint> stones = gameBoard.findAllElements(STONE);
         return pointsAroundMe.size() == 3 ||
                 pointsAroundMe.stream()
                         .filter(boardPoint -> (gameBoard.getElementAt(boardPoint) == WALL ||
                                 enemyBodyAndTail.contains(boardPoint) ||
-                                myBodyAndTail.contains(boardPoint)))
+                                myBodyAndTail.contains(boardPoint) ||
+                                stones.contains(boardPoint)))
                         .count() == 3;
     }
 
