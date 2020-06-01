@@ -17,6 +17,7 @@ public class Main {
 
     private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/0i28858kqgje0hm6uqui?code=9205253768897784839&gameName=snakebattle";
     public static final int EVIL_AMORTIZATION = 2;
+    private static final int MAX_RADIUS_TO_ATTACK = 10;
     //    public static final int LIMIT_SIZE = 10;
     public static int limitEvilCount = 0;
     public static final int STONE_RADIUS = 2;
@@ -29,6 +30,9 @@ public class Main {
         client.run(gameBoard -> {
             // Найти свою голову
             BoardPoint myHead = gameBoard.getMyHead();
+            if (myHead == null) {
+                myHead = gameBoard.findFirstElement(ENEMY_HEAD_DEAD);
+            }
             log.info("My head is " + myHead);
             if (myHead == null || gameBoard.getElementAt(myHead) == HEAD_SLEEP) {
                 limitEvilCount = 0;
@@ -85,9 +89,20 @@ public class Main {
                 log.warn("Что-то пошло не так");
                 log.warn("GameBoard is " + gameBoard.getBoardString());
                 Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
-                List<BoardPoint> collect = pointsAroundMe.stream()
-                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE))
-                        .collect(Collectors.toList());
+                List<BoardPoint> collect;
+                if (headEvil) {
+                    collect = pointsAroundMe.stream()
+                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
+                                    ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
+                                    ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
+                                    ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
+                            .collect(Collectors.toList());
+                } else {
+                    collect = pointsAroundMe.stream()
+                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE))
+                            .collect(Collectors.toList());
+                }
+
                 if (collect.isEmpty()) {
                     log.warn("Все равно что-то не так");
                     collect = pointsAroundMe.stream()
@@ -108,7 +123,9 @@ public class Main {
                             collect = pointsAroundMe.stream()
                                     .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
                                             ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
-                                            STONE, ENEMY_HEAD_DOWN, ENEMY_HEAD_LEFT, ENEMY_HEAD_RIGHT, ENEMY_HEAD_UP))
+                                            // туловище змеек противников
+                                            ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
+                                            ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
                                     .collect(Collectors.toList());
                             if (collect.isEmpty()) {
                                 log.info("Время обработки тупиковых решений " + (System.currentTimeMillis() - time));
@@ -139,39 +156,62 @@ public class Main {
                                                    BoardPoint myHead, GameBoard gameBoard) {
         List<BoardPoint> path = new ArrayList<>();
         Map<Integer, List<BoardPoint>> map = new HashMap<>();
-        List<BoardPoint> enemyTarget = gameBoard.getEnemyBodyAndTail();
-        enemyTarget.removeAll(gameBoard.getEnemyTails());
+        List<BoardPoint> enemyTarget = gameBoard.getEnemyBodyWithoutTail();
 
         int strength = limitEvilCount - evilCount - EVIL_AMORTIZATION;
+        if (strength >= MAX_RADIUS_TO_ATTACK) {
+            strength = MAX_RADIUS_TO_ATTACK;
+        }
 
         // Получаем куски всех змей, до которых успеем добежать
         Set<BoardPoint> pointsAroundAnotherPoint = getPointsAroundAnotherPoint(gameBoard, myHead, strength);
-        pointsAroundAnotherPoint.removeAll(gameBoard.findAllElements(WALL));
-        pointsAroundAnotherPoint.removeAll(gameBoard.getMyBodyAndTail());
-        List<BoardPoint> boardPoints = (List<BoardPoint>) CollectionUtils.retainAll(pointsAroundAnotherPoint, enemyTarget);
+//        pointsAroundAnotherPoint.removeAll(gameBoard.findAllElements(WALL));
+//        pointsAroundAnotherPoint.removeAll(gameBoard.getMyBodyAndTail());
+        List<BoardPoint> pathPoints2 = (List<BoardPoint>) CollectionUtils.retainAll(pathPoints, pointsAroundAnotherPoint);
+        List<BoardPoint> boardPoints = (List<BoardPoint>) CollectionUtils.retainAll(pathPoints2, enemyTarget);
         if (!boardPoints.isEmpty()) {
             // Получаем всех змей
             List<SnakeTarget> allTargetSnakes = getAllTargetSnakes(gameBoard);
+            // Получаем только змей, чьи куски присутствуют
+            allTargetSnakes = allTargetSnakes.stream()
+                    .filter(snake -> CollectionUtils.containsAny(snake.getSnakeBody(), boardPoints))
+                    .collect(Collectors.toList());
 
             // Для каждого куска змеи получить путь до ее хвоста, минус путь от моей головы до этой точки
-            for (BoardPoint enemyPiece : boardPoints) {
-                List<SnakeTarget> collect = allTargetSnakes.stream()
-                        .filter(snakeTarget -> snakeTarget.getSnakeBody().contains(enemyPiece))
-                        .collect(Collectors.toList());
-
-                if (!collect.isEmpty()) {
-                    int distanceToTail = collect.get(0).getDistanceToTail(enemyPiece);
-                    // Путь от моей головы до этой точки
-                    List<BoardPoint> nearestPathToSnake = getNearestPathToSnake(enemyPiece, myHead,
-                            gameBoard, pointsAroundAnotherPoint);
-                    if (!nearestPathToSnake.isEmpty() && nearestPathToSnake.size() <= strength) {
-                        int key = distanceToTail - nearestPathToSnake.size();
-                        if (key > 0) {
-                            map.put(key, nearestPathToSnake);
+            for (SnakeTarget snakeTarget : allTargetSnakes) {
+                for (BoardPoint enemyPiece : boardPoints) {
+                    if (snakeTarget.getSnakeBody().contains(enemyPiece)) {
+                        int distanceToTail = snakeTarget.getDistanceToTail(enemyPiece);
+                        // Путь от моей головы до этой точки
+                        List<BoardPoint> nearestPathToSnake = getNearestPathToSnake(enemyPiece, myHead,
+                                gameBoard, pathPoints2);
+                        if (!nearestPathToSnake.isEmpty() && nearestPathToSnake.size() <= strength) {
+                            int key = distanceToTail - nearestPathToSnake.size();
+                            if (key > 0) {
+                                map.put(key, nearestPathToSnake);
+                            }
                         }
                     }
                 }
             }
+//            for (BoardPoint enemyPiece : boardPoints) {
+//                List<SnakeTarget> collect = allTargetSnakes.stream()
+//                        .filter(snakeTarget -> snakeTarget.getSnakeBody().contains(enemyPiece))
+//                        .collect(Collectors.toList());
+//
+//                if (!collect.isEmpty()) {
+//                    int distanceToTail = collect.get(0).getDistanceToTail(enemyPiece);
+//                    // Путь от моей головы до этой точки
+//                    List<BoardPoint> nearestPathToSnake = getNearestPathToSnake(enemyPiece, myHead,
+//                            gameBoard, pathPoints2);
+//                    if (!nearestPathToSnake.isEmpty() && nearestPathToSnake.size() <= strength) {
+//                        int key = distanceToTail - nearestPathToSnake.size();
+//                        if (key > 0) {
+//                            map.put(key, nearestPathToSnake);
+//                        }
+//                    }
+//                }
+//            }
         }
 
         Optional<Integer> max = map.keySet().stream().max(Integer::compareTo);
@@ -184,7 +224,7 @@ public class Main {
     }
 
     private static List<BoardPoint> getNearestPathToSnake(BoardPoint pieceOfSnake, BoardPoint myHead,
-                                                          GameBoard gameBoard, Set<BoardPoint> pathPoints) {
+                                                          GameBoard gameBoard, List<BoardPoint> pathPoints) {
         List<BoardPoint> pathToOurPiece = new ArrayList<>();
 
         // Наши цели
@@ -281,7 +321,8 @@ public class Main {
                                 enemyBodyAndTail.contains(boardPoint) ||
                                 myBodyAndTail.contains(boardPoint) ||
                                 stones.contains(boardPoint)))
-                        .count() == 3;
+                        //TODO поменял на 4 посмотреть
+                        .count() == 4;
     }
 
     private static List<BoardPoint> getNearestPathFromAppleToTail(BoardPoint myTail, BoardPoint myAim,
@@ -476,7 +517,8 @@ public class Main {
 
         if (headEvil) {
             allApples.addAll(enemyBodyAndTail);
-            allApples.addAll(stones);
+            //Не ставим камни как цели
+//            allApples.addAll(stones);
             pathPoints.addAll(enemyBodyAndTail);
             pathPoints.addAll(stones);
             log.info("В АТАКУ ...");
