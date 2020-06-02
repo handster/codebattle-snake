@@ -20,41 +20,38 @@ public class Test {
 
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
-                "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
-                        "☼☼                                ☼\n" +
-                        "☼☼                             ®  ☼\n" +
-                        "☼#   ☼☼☼   ☼☼☼    ☼#   ☼☼☼   ☼☼☼  ☼\n" +
-                        "☼☼   ☼       ☼         ☼    ♥═╗☼  ☼\n" +
-                        "☼☼   ☼ ● ● ● ☼         ☼ ●╔╗®●║☼  ☼\n" +
-                        "☼☼                       ╘╝║╔═╝   ☼\n" +
-                        "☼☼   ®                   ●○╚╝●    ☼\n" +
-                        "☼☼                        ○○○     ☼\n" +
-                        "☼#   ☼ ● ● ● ☼    ☼#   ☼ ● ● ● ☼  ☼\n" +
-                        "☼☼   ☼       ☼         ☼       ☼  ☼\n" +
-                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
-                        "☼☼                     ®          ☼\n" +
-                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
-                        "☼☼   ☼       ☼         ☼       ☼  ☼\n" +
-                        "☼#   ☼     ● ☼    ☼#  ®☼ ● ● ● ☼  ☼\n" +
-                        "☼☼                        ○○○     ☼\n" +
-                        "☼☼         ●                ○●$   ☼\n" +
-                        "☼☼                        ○ ○     ☼\n" +
-                        "☼☼   ☼ ● ● ● ☼         ☼ ●   ● ☼® ☼\n" +
-                        "☼☼   ☼       ☼         ☼       ☼  ☼\n" +
-                        "☼#   ☼☼☼   ☼☼☼    ☼#   ☼☼☼   ☼☼☼  ☼\n" +
-                        "☼☼                               ®☼\n" +
-                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
-                        "☼☼   ☼       ☼         ☼       ☼  ☼\n" +
-                        "☼☼®  ☼ ● ● ● ☼       ® ☼ ●  ┌┐ ☼  ☼\n" +
-                        "☼☼      ○○○               ♣─┘│    ☼\n" +
-                        "☼#     ●○$○●      ☼#   ®  ○×─┘    ☼\n" +
-                        "☼☼ ®    ○○○               ○○○     ☼\n" +
-                        "☼☼   ☼ ● ● ● ☼         ☼ ● ● ● ☼  ☼\n" +
-                        "☼☼   ☼®      ☼        ®☼       ☼  ☼\n" +
-                        "☼☼   ☼☼☼   ☼☼☼         ☼☼☼   ☼☼☼  ☼\n" +
-                        "☼☼                         ®      ☼\n" +
-                        "☼☼                               ®☼\n" +
-                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n");
+                "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
+                        "☼☼                             ☼\n" +
+                        "☼☼                             ☼\n" +
+                        "☼☼  ☼☼☼  ☼☼  ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼\n" +
+                        "☼#  ☼    $☼  ☼○○☼  ☼  ☼○    ☼  ☼\n" +
+                        "☼☼  ☼  ☼● ☼  ☼    ☼☼  ☼  ☼ ○☼  ☼\n" +
+                        "☼☼  ☼   ☼    ☼  ●$    ☼  $ ☼☼  ☼\n" +
+                        "☼☼  ☼☼       ☼☼         ●      ☼\n" +
+                        "☼☼      ×┐☼      ☼ ☼      ☼    ☼\n" +
+                        "☼#    ☼ ┌┘☼  ☼○   ○☼  ☼○   ○☼  ☼\n" +
+                        "☼☼  ☼☼☼<┘☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼  ☼\n" +
+                        "☼☼                             ☼\n" +
+                        "☼☼       ╔♥                    ☼\n" +
+                        "☼☼  ☼☼☼☼ ║☼  ☼☼☼☼  ☼  ☼☼☼® ☼☼  ☼\n" +
+                        "☼#  ☼  ☼╘╝☼  ☼○    ☼  ☼$   ○☼  ☼\n" +
+                        "☼☼  ☼    ☼☼ ®☼  ☼ ○☼  ☼  ☼● ☼  ☼\n" +
+                        "☼☼  ☼  ●     ☼  $ ☼☼  ☼○  ☼    ☼\n" +
+                        "☼☼  ☼☼         ●      ☼☼  ○®   ☼\n" +
+                        "☼☼      ☼ ☼      ☼          ☼  ☼\n" +
+                        "☼#  ☼    ○☼  ☼○   ○☼    ☼  ○☼  ☼\n" +
+                        "☼☼  ☼☼☼  ☼☼  ☼☼☼® ☼☼  ☼☼☼  ☼☼  ☼\n" +
+                        "☼☼             ®               ☼\n" +
+                        "☼☼            ®                ☼\n" +
+                        "☼☼  ☼☼☼☼  ☼☼☼☼ ○☼☼☼☼  ☼☼☼☼  ☼  ☼\n" +
+                        "☼☼  ☼ ®○        ☼$      ☼○  ☼  ☼\n" +
+                        "☼#     ☼    ●○    ☼   ☼$  ☼    ☼\n" +
+                        "☼☼®   ●$ ®  ☼   ○☼     ●  ☼    ☼\n" +
+                        "☼☼  ☼   ○☼○      ○  ☼○ ○  ○ ☼  ☼\n" +
+                        "☼☼  ☼  ☼☼☼☼  ☼☼☼☼☼  ☼☼☼☼  ☼☼☼  ☼\n" +
+                        "☼☼      ○                      ☼\n" +
+                        "☼☼                         ®   ☼\n" +
+                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n");
         GameBoard gameBoard2 = new GameBoard("☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
                 "☼☼                    ®           ☼\n" +
                 "☼☼           ®                    ☼\n" +
@@ -101,10 +98,9 @@ public class Test {
         BoardPoint myHead = testGameBoard.getMyHead();
         System.out.println("My head is " + myHead);
 
-        Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, true);
         List<BoardPoint> myTail = testGameBoard.getMyTail();
-        Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, true);
-        List<BoardPoint> pathToAttack1 = Main.getPathToAim(testGameBoard, myHead, allApples, pathPoints, myTail.get(0));
+        Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, false);
+        List<BoardPoint> pathToAttack1 = Main.getPathToAttack(pathPoints, myHead, gameBoard);
         System.out.println(pathToAttack1);
     }
 }

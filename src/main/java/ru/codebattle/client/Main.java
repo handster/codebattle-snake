@@ -15,8 +15,8 @@ import static ru.codebattle.client.api.Direction.*;
 @Slf4j
 public class Main {
 
-    private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/0i28858kqgje0hm6uqui?code=9205253768897784839&gameName=snakebattle";
-    public static final int EVIL_AMORTIZATION = 2;
+    private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/54qs0j4ptqy3zv9xt3eh?code=153896642938289348&gameName=snakebattle";
+    public static final int EVIL_AMORTIZATION = 1;
     private static final int MAX_RADIUS_TO_ATTACK = 10;
     //    public static final int LIMIT_SIZE = 10;
     public static int limitEvilCount = 0;
@@ -99,7 +99,7 @@ public class Main {
                             .collect(Collectors.toList());
                 } else {
                     collect = pointsAroundMe.stream()
-                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE))
+                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE))
                             .collect(Collectors.toList());
                 }
 
@@ -159,9 +159,9 @@ public class Main {
         List<BoardPoint> enemyTarget = gameBoard.getEnemyBodyWithoutTail();
 
         int strength = limitEvilCount - evilCount - EVIL_AMORTIZATION;
-        if (strength >= MAX_RADIUS_TO_ATTACK) {
-            strength = MAX_RADIUS_TO_ATTACK;
-        }
+//        if (strength >= MAX_RADIUS_TO_ATTACK) {
+//            strength = MAX_RADIUS_TO_ATTACK;
+//        }
 
         // Получаем куски всех змей, до которых успеем добежать
         Set<BoardPoint> pointsAroundAnotherPoint = getPointsAroundAnotherPoint(gameBoard, myHead, strength);
