@@ -18,37 +18,37 @@ public class Test {
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
-                        "☼☼                         ®   ☼\n" +
+                        "☼☼             ®            ®  ☼\n" +
                         "☼☼                             ☼\n" +
                         "☼☼  ☼☼☼  ☼☼  ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼\n" +
-                        "☼#  ☼○   $☼  ☼○○☼ ®☼  ☼<───┐☼  ☼\n" +
-                        "☼☼  ☼  ☼● ☼  ☼    ☼☼  ☼  ☼┌┘☼  ☼\n" +
-                        "☼☼  ☼○ ○☼    ☼  ●     ☼ $$│☼☼  ☼\n" +
-                        "☼☼  ☼☼   ○® ®☼☼         ● └┐   ☼\n" +
-                        "☼☼        ☼     ®☼®☼      ☼│   ☼\n" +
-                        "☼#    ☼  ○☼  ☼  ® ○☼  ☼    ¤☼  ☼\n" +
+                        "☼#  ☼○   $☼  ☼○○☼  ☼  ☼○    ☼  ☼\n" +
+                        "☼☼  ☼  ☼● ☼  ☼    ☼☼  ☼  ☼ ○☼  ☼\n" +
+                        "☼☼  ☼○ ○☼    ☼  ●$    ☼  $ ☼☼  ☼\n" +
+                        "☼☼  ☼☼       ☼☼         ●      ☼\n" +
+                        "☼☼        ☼      ☼ ☼      ☼    ☼\n" +
+                        "☼#    ☼  ○☼  ☼○   ○☼  ☼○   ○☼  ☼\n" +
                         "☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼  ☼\n" +
+                        "☼☼          ®                  ☼\n" +
+                        "☼☼            ®       ®   ®    ☼\n" +
+                        "☼☼  ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼☼☼  ☼☼  ☼\n" +
+                        "☼#  ☼  ☼ ○☼  ☼○    ☼  ☼$   ○☼  ☼\n" +
+                        "☼☼  ☼    ☼☼  ☼  ☼ ○☼  ☼  ☼● ☼  ☼\n" +
+                        "☼☼  ☼  ●     ☼    ☼☼  ☼○  ☼    ☼\n" +
+                        "☼☼  ☼☼                ☼☼  ○ ®  ☼\n" +
+                        "☼☼      ☼ ☼      ☼          ☼  ☼\n" +
+                        "☼#  ☼    ○☼  ☼○   ○☼    ☼  ○☼  ☼\n" +
+                        "☼☼  ☼☼☼  ☼☼  ☼☼☼ ®☼☼  ☼☼☼  ☼☼  ☼\n" +
                         "☼☼                             ☼\n" +
-                        "☼☼                         ®   ☼\n" +
-                        "☼☼® ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼☼☼  ☼☼  ☼\n" +
-                        "☼#  ☼  ☼  ☼  ☼     ☼  ☼$♥  ○☼  ☼\n" +
-                        "☼☼  ☼    ☼☼  ☼  ☼  ☼  ☼ ║☼● ☼  ☼\n" +
-                        "☼☼® ☼  ●     ☼    ☼☼  ☼○║ ☼    ☼\n" +
-                        "☼☼  ☼☼         ●      ☼☼║ ○    ☼\n" +
-                        "☼☼      ☼ ☼      ☼     ╔╝   ☼  ☼\n" +
-                        "☼#  ☼     ☼  ☼     ☼ ╔═╝☼  ○☼  ☼\n" +
-                        "☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼ ║☼☼☼  ☼☼  ☼\n" +
-                        "☼☼         ○     ●   ╚╕        ☼\n" +
-                        "☼☼                   ○         ☼\n" +
-                        "☼☼  ☼☼☼☼  ☼☼☼☼  ☼☼☼☼  ☼☼☼☼  ☼  ☼\n" +
-                        "☼☼  ☼  ○        ☼       ☼   ☼  ☼\n" +
-                        "☼#     ☼    ●     ☼   ☼   ☼    ☼\n" +
-                        "☼☼          ☼    ☼        ☼    ☼\n" +
-                        "☼☼  ☼    ☼          ☼○    ○ ☼  ☼\n" +
-                        "☼☼  ☼  ☼☼☼☼  ☼☼☼☼☼  ☼☼☼☼  ☼☼☼  ☼\n" +
                         "☼☼                             ☼\n" +
-                        "☼☼               ○             ☼\n" +
-                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n");
+                        "☼☼  ☼☼☼☼  ☼☼☼☼ ○☼☼☼☼  ☼☼☼☼  ☼  ☼\n" +
+                        "☼☼  ☼           ☼$     æ☼○  ☼ ®☼\n" +
+                        "☼#     ☼    ●○    ☼   ☼│  ☼    ☼\n" +
+                        "☼☼    ●     ☼    ☼ ╔♥ ♣┘  ☼    ☼\n" +
+                        "☼☼  ☼   ○☼         ║☼○ ○  ○ ☼  ☼\n" +
+                        "☼☼  ☼  ☼☼☼☼  ☼☼☼☼☼ ║☼☼☼☼  ☼☼☼  ☼\n" +
+                        "☼☼                 ║           ☼\n" +
+                        "☼☼                ╘╝          ®☼\n" +
+                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼");
 
         GameBoard testGameBoard = gameBoard;
 
@@ -61,7 +61,8 @@ public class Test {
         System.out.println("My head is " + myHead);
 
         Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, true);
-        List<BoardPoint> pathToAttack = Main.getPathToAim(gameBoard, myHead, allApples, pathPoints);
+        Main.modifyAimsDependingDistanceToEnemySnakes(allApples, pathPoints, myHead, gameBoard, false);
+        List<BoardPoint> pathToAttack = Main.getPathToAttack(pathPoints, myHead, gameBoard);
 //        SnakeAction pathToAttack1 = Main.getSnakeAction(testGameBoard, myHead, true, new ArrayList<>());
         System.out.println(pathToAttack);
     }

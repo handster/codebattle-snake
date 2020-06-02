@@ -41,7 +41,7 @@ public class Main {
                 return new SnakeAction(false, STOP);
             }
             // Первоначальные цели
-            List<BoardPoint> allApples = gameBoard.findAllElements(APPLE, GOLD, FURY_PILL);
+            List<BoardPoint> allApples = gameBoard.findAllElements(APPLE, FURY_PILL);
 
             // Первоначальные элементы через которые можно проложить путь
             List<BoardPoint> pathPoints = gameBoard.findAllElements(NONE, APPLE, GOLD, FURY_PILL);
@@ -63,6 +63,7 @@ public class Main {
                     Direction direction = goToWin(myHead, pathToAttack.get(0));
 
                     log.info("Время поиска пути для атаки " + (System.currentTimeMillis() - time));
+                    log.info("Путь атаки " + pathToAttack);
                     time = System.currentTimeMillis();
                     boolean act = getAct(gameBoard);
                     return new SnakeAction(act, direction);
@@ -158,7 +159,7 @@ public class Main {
         return new SnakeAction(act, direction);
     }
 
-    private static void modifyAimsDependingDistanceToEnemySnakes(List<BoardPoint> allApples, List<BoardPoint> pathPoints, BoardPoint myHead, GameBoard gameBoard, boolean headEvil) {
+    public static void modifyAimsDependingDistanceToEnemySnakes(List<BoardPoint> allApples, List<BoardPoint> pathPoints, BoardPoint myHead, GameBoard gameBoard, boolean headEvil) {
         int distance = 30;
         //Получаем головы врагов
         List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
@@ -176,12 +177,27 @@ public class Main {
 
         boolean isEnemyEvil = false;
         if (map.containsKey(distance)) {
-            isEnemyEvil = gameBoard.getElementAt(map.get(distance)) == ENEMY_HEAD_EVIL;
+            BoardPoint enemyHead = map.get(distance);
+            isEnemyEvil = gameBoard.getElementAt(enemyHead) == ENEMY_HEAD_EVIL;
         }
         // Если наименьшее расстояние меньше какого-то предела, то в цели ставить только таблетки
         // Если враг злой, расстояние меньше 10 и моя таблетка через 10 закончится
         if (isEnemyEvil && distance <= ALARM_DISTANCE && (limitEvilCount - evilCount) <= ALARM_DISTANCE) {
             log.warn("Срочно ищем таблетку");
+
+            List<BoardPoint> furyPills = gameBoard.getFuryPills();
+            if (!furyPills.isEmpty()) {
+                allApples.clear();
+                allApples.addAll(furyPills);
+            }
+
+            if (headEvil) {
+                List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+                allApples.addAll(enemyBodyAndTail);
+                pathPoints.addAll(enemyBodyAndTail);
+            }
+        } else if(distance <= ALARM_DISTANCE/2) {
+            log.warn("Змеи не злые но рядом");
 
             List<BoardPoint> furyPills = gameBoard.getFuryPills();
             if (!furyPills.isEmpty()) {
@@ -209,7 +225,7 @@ public class Main {
         //TODO Посмотреть как будет себя вести
         List<BoardPoint> enemyTarget = gameBoard.getEnemyBodyAndTail();
 
-        int strength = limitEvilCount - evilCount - EVIL_AMORTIZATION;
+        int strength = limitEvilCount - evilCount;
 //        if (strength >= MAX_RADIUS_TO_ATTACK) {
 //            strength = MAX_RADIUS_TO_ATTACK;
 //        }
@@ -345,7 +361,9 @@ public class Main {
         for (int i = 0; i < 2; i++) {
             myHead = gameBoard.getMyHead();
             // Получаем путь до яблока
-            pathFromHeadToApple = getNearestPathToApple(allApples, myHead, gameBoard, pathPoints);
+            if (myHead != null) {
+                pathFromHeadToApple = getNearestPathToApple(allApples, myHead, gameBoard, pathPoints);
+            }
 
             log.info("Первый путь до цели " + pathFromHeadToApple);
             if (pathFromHeadToApple.isEmpty()) {
@@ -395,6 +413,9 @@ public class Main {
 
     private static List<BoardPoint> getNearestPathFromAppleToTail(BoardPoint myHead, BoardPoint myAim,
                                                                   GameBoard gameBoard, List<BoardPoint> pathPoints) {
+        if (myHead == null) {
+            return Collections.emptyList();
+        }
         List<BoardPoint> oneAimList = new ArrayList<>();
         oneAimList.add(myHead);
         return getNearestPathToApple(oneAimList, myAim, gameBoard, pathPoints);
@@ -560,14 +581,6 @@ public class Main {
         //Таблетка
         List<Node> collect = pathsToWin.stream()
                 .filter(node -> gameBoard.getElementAt(node.getBoardPoint()) == FURY_PILL)
-                .collect(Collectors.toList());
-        if (!collect.isEmpty()) {
-            return collect.get(0);
-        }
-
-        //Золото
-        collect = pathsToWin.stream()
-                .filter(node -> gameBoard.getElementAt(node.getBoardPoint()) == GOLD)
                 .collect(Collectors.toList());
         if (!collect.isEmpty()) {
             return collect.get(0);
