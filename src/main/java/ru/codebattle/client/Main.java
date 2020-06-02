@@ -538,7 +538,7 @@ public class Main {
                             .collect(Collectors.toList());
                     if (!evilHeadSnakes.isEmpty()) {
                         SnakeTarget longestSnake = getLongestSnake(gameBoard, evilHeadSnakes);
-                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                        if (longestSnake != null && longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
                             allApples.remove(point);
                         }
@@ -554,7 +554,7 @@ public class Main {
                         allApples.remove(point);
                     } else {
                         SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
-                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                        if (longestSnake != null && longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
                             allApples.remove(point);
                         }
@@ -580,7 +580,7 @@ public class Main {
                             .collect(Collectors.toList());
                     if (!evilHeadSnakes.isEmpty()) {
                         SnakeTarget longestSnake = getLongestSnake(gameBoard, evilHeadSnakes);
-                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                        if (longestSnake != null && longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
                             allApples.remove(point);
                             // Удалить еще предыдущую точку
@@ -606,7 +606,7 @@ public class Main {
                         allApples.remove(pointBetweenAnotherPointAndMyHead);
                     } else {
                         SnakeTarget longestSnake = getLongestSnake(gameBoard, commonPoints);
-                        if (longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
+                        if (longestSnake != null && longestSnake.getLength() + 2 >= gameBoard.getMyBodyAndTail().size()) {
                             pathPoints.remove(point);
                             allApples.remove(point);
                             // Удалить еще предыдущую точку
@@ -670,6 +670,9 @@ public class Main {
 
     private static SnakeTarget getLongestSnake(GameBoard gameBoard, List<BoardPoint> evilSnakes) {
         SnakeTarget maxSnakeTarget = getEnemySnakeByHead(gameBoard, evilSnakes.get(0));
+        if (maxSnakeTarget == null) {
+            return null;
+        }
         for (BoardPoint point : evilSnakes) {
             if (getEnemySnakeByHead(gameBoard, point).getLength() > maxSnakeTarget.getLength()) {
                 maxSnakeTarget = getEnemySnakeByHead(gameBoard, point);
