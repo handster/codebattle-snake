@@ -104,14 +104,14 @@ public class Main {
             List<BoardPoint> collect;
             if (headEvil) {
                 collect = pointsAroundMe.stream()
-                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE,
+                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE, GOLD,
                                 ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
                                 ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
                                 ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
                         .collect(Collectors.toList());
             } else {
                 collect = pointsAroundMe.stream()
-                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE))
+                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE, GOLD))
                         .collect(Collectors.toList());
             }
 
@@ -196,7 +196,7 @@ public class Main {
                 allApples.addAll(enemyBodyAndTail);
                 pathPoints.addAll(enemyBodyAndTail);
             }
-        } else if(distance <= ALARM_DISTANCE/2) {
+        } else if (!isEnemyEvil && distance <= ALARM_DISTANCE / 2) {
             log.warn("Змеи не злые но рядом");
 
             List<BoardPoint> furyPills = gameBoard.getFuryPills();
@@ -255,15 +255,16 @@ public class Main {
                         if (!nearestPathToSnake.isEmpty() && nearestPathToSnake.size() <= strength) {
                             int key = distanceToTail - nearestPathToSnake.size();
                             //TODO посмотреть как это будет работать
-                            if (map.containsKey(key)) {
-                                map.get(key).put(nearestPathToSnake.size(), nearestPathToSnake);
-//                            if (key > 0) {
-                            } else {
-                                Map<Integer, List<BoardPoint>> map2 = new HashMap<>();
-                                map2.put(nearestPathToSnake.size(), nearestPathToSnake);
-                                map.put(key, map2);
+                            if (key > 0) {
+                                if (map.containsKey(key)) {
+                                    map.get(key).put(nearestPathToSnake.size(), nearestPathToSnake);
+
+                                } else {
+                                    Map<Integer, List<BoardPoint>> map2 = new HashMap<>();
+                                    map2.put(nearestPathToSnake.size(), nearestPathToSnake);
+                                    map.put(key, map2);
+                                }
                             }
-//                            }
                         }
                     }
                 }
@@ -359,16 +360,17 @@ public class Main {
         List<BoardPoint> pathFromAppleToTail = new ArrayList<>();
         // Пробуем два раза построить путь, если не получилось, идем куда уж идется
         for (int i = 0; i < 2; i++) {
-            myHead = gameBoard.getMyHead();
+//            myHead = gameBoard.getMyHead();
             // Получаем путь до яблока
-            if (myHead != null) {
+//            if (myHead != null) {
                 pathFromHeadToApple = getNearestPathToApple(allApples, myHead, gameBoard, pathPoints);
-            }
+//            }
 
             log.info("Первый путь до цели " + pathFromHeadToApple);
             if (pathFromHeadToApple.isEmpty()) {
                 break;
             }
+            //TODO посмотреть как будет работать в тупиках без этого
             if (pathFromHeadToApple.size() == 1) {
                 myHead = getMyTailBoardPoint(gameBoard);
             }
