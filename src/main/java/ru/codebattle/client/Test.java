@@ -100,7 +100,7 @@ public class Test {
 
         List<BoardPoint> myTail = testGameBoard.getMyTail();
         Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, false);
-        List<BoardPoint> pathToAttack1 = Main.getPathToAttack(pathPoints, myHead, gameBoard);
+        List<BoardPoint> pathToAttack1 = Main.getPathToAim(testGameBoard, myHead, allApples, pathPoints);
         System.out.println(pathToAttack1);
     }
 }

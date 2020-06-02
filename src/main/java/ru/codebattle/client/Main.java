@@ -76,9 +76,8 @@ public class Main {
             //Отфильтровать яблоки в тупиках
             allApples = getApplesWithoutBlockApples(allApples, gameBoard, headEvil);
 
-            BoardPoint myTail = getMyTailBoardPoint(gameBoard);
             time = System.currentTimeMillis();
-            List<BoardPoint> pathFromHeadToApple = getPathToAim(gameBoard, myHead, allApples, pathPoints, myTail);
+            List<BoardPoint> pathFromHeadToApple = getPathToAim(gameBoard, myHead, allApples, pathPoints);
 
             log.info("Поиск пути № 1 " + (System.currentTimeMillis() - time));
             time = System.currentTimeMillis();
@@ -273,7 +272,7 @@ public class Main {
         return myTail;
     }
 
-    public static List<BoardPoint> getPathToAim(GameBoard gameBoard, BoardPoint myHead, List<BoardPoint> allApples, List<BoardPoint> pathPoints, BoardPoint myTail) {
+    public static List<BoardPoint> getPathToAim(GameBoard gameBoard, BoardPoint myHead, List<BoardPoint> allApples, List<BoardPoint> pathPoints) {
         BoardPoint myAim;
         List<BoardPoint> pathFromHeadToApple = new ArrayList<>();
         List<BoardPoint> pathFromAppleToTail = new ArrayList<>();
@@ -283,7 +282,7 @@ public class Main {
             pathFromHeadToApple = getNearestPathToApple(allApples, myHead, gameBoard, pathPoints);
 
             log.info("Первый путь до цели " + pathFromHeadToApple);
-            if (pathFromHeadToApple.isEmpty() || isMyTailInWall(gameBoard, myTail)) {
+            if (pathFromHeadToApple.isEmpty()) {
                 break;
             }
             myAim = pathFromHeadToApple.get(pathFromHeadToApple.size() - 1);
@@ -292,7 +291,7 @@ public class Main {
             // Убираем, чтобы не идти по этому же пути
             pathPoints.removeAll(pathFromHeadToApple);
 
-            pathFromAppleToTail = getNearestPathFromAppleToTail(myTail, myAim, gameBoard, pathPoints);
+            pathFromAppleToTail = getNearestPathFromAppleToTail(myHead, myAim, gameBoard, pathPoints);
             if (pathFromAppleToTail.isEmpty()) {
                 pathPoints.remove(myAim);
                 allApples.remove(myAim);
@@ -325,10 +324,10 @@ public class Main {
                         .count() == 4;
     }
 
-    private static List<BoardPoint> getNearestPathFromAppleToTail(BoardPoint myTail, BoardPoint myAim,
+    private static List<BoardPoint> getNearestPathFromAppleToTail(BoardPoint myHead, BoardPoint myAim,
                                                                   GameBoard gameBoard, List<BoardPoint> pathPoints) {
         List<BoardPoint> oneAimList = new ArrayList<>();
-        oneAimList.add(myTail);
+        oneAimList.add(myHead);
         return getNearestPathToApple(oneAimList, myAim, gameBoard, pathPoints);
     }
 
@@ -524,9 +523,7 @@ public class Main {
             log.info("В АТАКУ ...");
         }
         // Получаем головы всех змей на карте
-        Set<BoardPoint> enemyHeads = getAllTargetSnakes(gameBoard).stream()
-                .map(SnakeTarget::getEnemyHead)
-                .collect(Collectors.toSet());
+        List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
 
         // Получаем точки на расстоянии 1 от моей головы
         Set<BoardPoint> pointsOnDistance = getPointsOnDistance(gameBoard, myHead, 1);
