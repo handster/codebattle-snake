@@ -18,6 +18,7 @@ public class Main {
     private static final String SERVER_ADDRESS = "http://codebattle-pro-2020s1.westeurope.cloudapp.azure.com/codenjoy-contest/board/player/54qs0j4ptqy3zv9xt3eh?code=153896642938289348&gameName=snakebattle";
     public static final int EVIL_AMORTIZATION = 1;
     private static final int MAX_RADIUS_TO_ATTACK = 10;
+    private static final int ALARM_DISTANCE = 10;
     //    public static final int LIMIT_SIZE = 10;
     public static int limitEvilCount = 0;
     public static final int STONE_RADIUS = 2;
@@ -53,6 +54,8 @@ public class Main {
             // Изменяем наши цели и точки пути в зависимости от наличия ярости, и длины врагов
             modifyApplesAndPathPoints(allApples, pathPoints, myHead, gameBoard, headEvil);
 
+            modifyAimsDependingDistanceToEnemySnakes(allApples, pathPoints, myHead, gameBoard, headEvil);
+
             //TODO написать атаку врагов
             if (headEvil) {
                 List<BoardPoint> pathToAttack = getPathToAttack(pathPoints, myHead, gameBoard);
@@ -84,65 +87,7 @@ public class Main {
             log.info("Nearest path is " + pathFromHeadToApple);
 
             //TODO переработать этот блок
-            if (pathFromHeadToApple.isEmpty()) {
-                log.warn("Что-то пошло не так");
-                log.warn("GameBoard is " + gameBoard.getBoardString());
-                Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
-                List<BoardPoint> collect;
-                if (headEvil) {
-                    collect = pointsAroundMe.stream()
-                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
-                                    ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
-                                    ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
-                                    ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
-                            .collect(Collectors.toList());
-                } else {
-                    collect = pointsAroundMe.stream()
-                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE))
-                            .collect(Collectors.toList());
-                }
-
-                if (collect.isEmpty()) {
-                    log.warn("Все равно что-то не так");
-                    collect = pointsAroundMe.stream()
-                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, STONE))
-                            .collect(Collectors.toList());
-                    if (collect.isEmpty()) {
-                        log.warn("Ну чет вообще беда");
-                        //Если опять некуда идти, то идем в камень либо на врага
-                        collect = pointsAroundMe.stream()
-                                .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
-                                        BODY_HORIZONTAL, BODY_VERTICAL,
-                                        BODY_LEFT_DOWN, BODY_LEFT_UP, BODY_RIGHT_DOWN, BODY_RIGHT_UP, TAIL_END_DOWN,
-                                        TAIL_END_LEFT, TAIL_END_UP, TAIL_END_RIGHT))
-                                .collect(Collectors.toList());
-                        if (collect.isEmpty()) {
-                            log.warn("Ну чет вообще беда 2");
-                            //Если опять некуда идти, то идем в камень либо на врага
-                            collect = pointsAroundMe.stream()
-                                    .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
-                                            ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
-                                            // туловище змеек противников
-                                            ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
-                                            ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
-                                    .collect(Collectors.toList());
-                            if (collect.isEmpty()) {
-                                log.info("Время обработки тупиковых решений " + (System.currentTimeMillis() - time));
-                                time = System.currentTimeMillis();
-                                return new SnakeAction(false, STOP);
-                            }
-                        }
-                    }
-                }
-                Direction direction = goToWin(myHead, collect.get(new Random().nextInt(collect.size())));
-                return new SnakeAction(false, direction);
-            }
-            Direction direction = goToWin(myHead, pathFromHeadToApple.get(0));
-
-            boolean act = getAct(gameBoard);
-            log.info("Тотал время " + (System.currentTimeMillis() - time));
-            time = System.currentTimeMillis();
-            return new SnakeAction(act, direction);
+            return getSnakeAction(gameBoard, myHead, headEvil, pathFromHeadToApple);
         });
 
         System.in.read();
@@ -150,12 +95,119 @@ public class Main {
         client.initiateExit();
     }
 
+    public static SnakeAction getSnakeAction(GameBoard gameBoard, BoardPoint myHead, boolean headEvil, List<BoardPoint> pathFromHeadToApple) {
+        if (pathFromHeadToApple.isEmpty()) {
+            log.warn("Что-то пошло не так");
+            log.warn("GameBoard is " + gameBoard.getBoardString());
+            Set<BoardPoint> pointsAroundMe = getPointsAroundMe(gameBoard, myHead);
+            List<BoardPoint> collect;
+            if (headEvil) {
+                collect = pointsAroundMe.stream()
+                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE,
+                                ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
+                                ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
+                                ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
+                        .collect(Collectors.toList());
+            } else {
+                collect = pointsAroundMe.stream()
+                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, NONE, APPLE))
+                        .collect(Collectors.toList());
+            }
+
+            if (collect.isEmpty()) {
+                log.warn("Все равно что-то не так");
+                collect = pointsAroundMe.stream()
+                        .filter(boardPoint -> gameBoard.hasElementAt(boardPoint, STONE))
+                        .collect(Collectors.toList());
+                if (collect.isEmpty()) {
+                    log.warn("Ну чет вообще беда");
+                    //Если опять некуда идти, то идем в камень либо на врага
+                    collect = pointsAroundMe.stream()
+                            .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
+                                    BODY_HORIZONTAL, BODY_VERTICAL,
+                                    BODY_LEFT_DOWN, BODY_LEFT_UP, BODY_RIGHT_DOWN, BODY_RIGHT_UP, TAIL_END_DOWN,
+                                    TAIL_END_LEFT, TAIL_END_UP, TAIL_END_RIGHT))
+                            .collect(Collectors.toList());
+                    //TODO убрать отсюда шею
+                    if (collect.isEmpty()) {
+                        log.warn("Ну чет вообще беда 2");
+                        //Если опять некуда идти, то идем в камень либо на врага
+                        collect = pointsAroundMe.stream()
+                                .filter(boardPoint -> gameBoard.hasElementAt(boardPoint,
+                                        ENEMY_TAIL_END_DOWN, ENEMY_TAIL_END_RIGHT, ENEMY_TAIL_END_UP, ENEMY_TAIL_END_LEFT,
+                                        // туловище змеек противников
+                                        ENEMY_BODY_HORIZONTAL, ENEMY_BODY_VERTICAL, ENEMY_BODY_LEFT_DOWN,
+                                        ENEMY_BODY_LEFT_UP, ENEMY_BODY_RIGHT_DOWN, ENEMY_BODY_RIGHT_UP))
+                                .collect(Collectors.toList());
+                        if (collect.isEmpty()) {
+                            log.info("Время обработки тупиковых решений " + (System.currentTimeMillis() - time));
+                            time = System.currentTimeMillis();
+                            return new SnakeAction(false, STOP);
+                        }
+                    }
+                }
+            }
+            Direction direction = goToWin(myHead, collect.get(new Random().nextInt(collect.size())));
+            return new SnakeAction(false, direction);
+        }
+        Direction direction = goToWin(myHead, pathFromHeadToApple.get(0));
+
+        boolean act = getAct(gameBoard);
+        log.info("Тотал время " + (System.currentTimeMillis() - time));
+        time = System.currentTimeMillis();
+        return new SnakeAction(act, direction);
+    }
+
+    private static void modifyAimsDependingDistanceToEnemySnakes(List<BoardPoint> allApples, List<BoardPoint> pathPoints, BoardPoint myHead, GameBoard gameBoard, boolean headEvil) {
+        int distance = 30;
+        //Получаем головы врагов
+        List<BoardPoint> enemyHeads = gameBoard.getEnemyHeads();
+        // Получаем тупо расстояние до каждой
+        Map<Integer, BoardPoint> map = new HashMap<>();
+        Optional<Integer> min = enemyHeads.stream()
+                .peek(head -> {
+                    map.put(getStupidDistance(myHead, head), head);
+                })
+                .map(head -> getStupidDistance(myHead, head))
+                .min(Integer::compareTo);
+        if (min.isPresent()) {
+            distance = min.get();
+        }
+
+        boolean isEnemyEvil = false;
+        if (map.containsKey(distance)) {
+            isEnemyEvil = gameBoard.getElementAt(map.get(distance)) == ENEMY_HEAD_EVIL;
+        }
+        // Если наименьшее расстояние меньше какого-то предела, то в цели ставить только таблетки
+        // Если враг злой, расстояние меньше 10 и моя таблетка через 10 закончится
+        if (isEnemyEvil && distance <= ALARM_DISTANCE && (limitEvilCount - evilCount) <= ALARM_DISTANCE) {
+            log.warn("Срочно ищем таблетку");
+
+            List<BoardPoint> furyPills = gameBoard.getFuryPills();
+            if (!furyPills.isEmpty()) {
+                allApples.clear();
+                allApples.addAll(furyPills);
+            }
+
+            if (headEvil) {
+                List<BoardPoint> enemyBodyAndTail = gameBoard.getEnemyBodyAndTail();
+                allApples.addAll(enemyBodyAndTail);
+                pathPoints.addAll(enemyBodyAndTail);
+            }
+        }
+    }
+
+    private static int getStupidDistance(BoardPoint myHead, BoardPoint head) {
+        return Math.abs(myHead.getX() - head.getX()) + Math.abs(myHead.getY() - head.getY());
+    }
+
     //Логика атаки врагов, когда мы под таблеткой
     public static List<BoardPoint> getPathToAttack(List<BoardPoint> pathPoints,
                                                    BoardPoint myHead, GameBoard gameBoard) {
         List<BoardPoint> path = new ArrayList<>();
-        Map<Integer, List<BoardPoint>> map = new HashMap<>();
-        List<BoardPoint> enemyTarget = gameBoard.getEnemyBodyWithoutTail();
+        Map<Integer, Map<Integer, List<BoardPoint>>> map = new HashMap<>();
+        //TODO Посмотреть как будет себя вести
+        List<BoardPoint> enemyTarget = gameBoard.getEnemyBodyAndTail();
 
         int strength = limitEvilCount - evilCount - EVIL_AMORTIZATION;
 //        if (strength >= MAX_RADIUS_TO_ATTACK) {
@@ -186,9 +238,16 @@ public class Main {
                                 gameBoard, pathPoints2);
                         if (!nearestPathToSnake.isEmpty() && nearestPathToSnake.size() <= strength) {
                             int key = distanceToTail - nearestPathToSnake.size();
-                            if (key > 0) {
-                                map.put(key, nearestPathToSnake);
+                            //TODO посмотреть как это будет работать
+                            if (map.containsKey(key)) {
+                                map.get(key).put(nearestPathToSnake.size(), nearestPathToSnake);
+//                            if (key > 0) {
+                            } else {
+                                Map<Integer, List<BoardPoint>> map2 = new HashMap<>();
+                                map2.put(nearestPathToSnake.size(), nearestPathToSnake);
+                                map.put(key, map2);
                             }
+//                            }
                         }
                     }
                 }
@@ -215,7 +274,13 @@ public class Main {
 
         Optional<Integer> max = map.keySet().stream().max(Integer::compareTo);
         if (max.isPresent()) {
-            return map.get(max.get());
+            int maxValue = max.get();
+            Map<Integer, List<BoardPoint>> integerListMap = map.get(maxValue);
+            Optional<Integer> min = integerListMap.keySet().stream().min(Integer::compareTo);
+            if (min.isPresent()) {
+                int minPath = min.get();
+                return integerListMap.get(minPath);
+            }
         }
 
         // Из этих расчетов выбрать наименьший
@@ -278,12 +343,16 @@ public class Main {
         List<BoardPoint> pathFromAppleToTail = new ArrayList<>();
         // Пробуем два раза построить путь, если не получилось, идем куда уж идется
         for (int i = 0; i < 2; i++) {
+            myHead = gameBoard.getMyHead();
             // Получаем путь до яблока
             pathFromHeadToApple = getNearestPathToApple(allApples, myHead, gameBoard, pathPoints);
 
             log.info("Первый путь до цели " + pathFromHeadToApple);
             if (pathFromHeadToApple.isEmpty()) {
                 break;
+            }
+            if (pathFromHeadToApple.size() == 1) {
+                myHead = getMyTailBoardPoint(gameBoard);
             }
             myAim = pathFromHeadToApple.get(pathFromHeadToApple.size() - 1);
             // Точки пути, которые необходимо убрать из общих

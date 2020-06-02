@@ -2,10 +2,7 @@ package ru.codebattle.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import ru.codebattle.client.api.BoardPoint;
-import ru.codebattle.client.api.GameBoard;
-import ru.codebattle.client.api.Node;
-import ru.codebattle.client.api.SnakeTarget;
+import ru.codebattle.client.api.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,37 +18,37 @@ public class Test {
     public static void main(String[] args) {
         GameBoard gameBoard = new GameBoard(
                 "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n" +
+                        "☼☼                         ®   ☼\n" +
                         "☼☼                             ☼\n" +
-                        "☼☼                             ☼\n" +
-                        "☼☼  ☼☼☼  ☼☼  ☼☼☼☼  ☼  ☼☼☼☼ ®☼  ☼\n" +
-                        "☼#  ☼○    ☼  ☼○○☼  ☼  ☼○    ☼  ☼\n" +
-                        "☼☼  ☼  ☼● ☼  ☼    ☼☼  ☼  ☼ ○☼  ☼\n" +
-                        "☼☼  ☼○ ○☼    ☼  ●$    ☼  $ ☼☼  ☼\n" +
-                        "☼☼  ☼☼®  ╓   ☼☼         ●      ☼\n" +
-                        "☼☼      ☺☻☼      ☼ ☼      ☼    ☼\n" +
-                        "☼#    ☼ ┌┘☼  ☼○   ○☼  ☼○   ○☼  ☼\n" +
-                        "☼☼  ☼☼☼ │☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼  ☼\n" +
-                        "☼☼      ¤      ®       ®       ☼\n" +
-                        "☼☼                             ☼\n" +
-                        "☼☼  ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼☼☼  ☼☼  ☼\n" +
-                        "☼#  ☼  ☼  ☼  ☼○    ☼  ☼$   ○☼  ☼\n" +
-                        "☼☼  ☼    ☼☼  ☼  ☼ ○☼  ☼  ☼● ☼  ☼\n" +
-                        "☼☼  ☼  ●     ☼  $ ☼☼  ☼○  ☼  ® ☼\n" +
-                        "☼☼  ☼☼         ●      ☼☼  ○    ☼\n" +
-                        "☼☼      ☼ ☼      ☼ ®        ☼  ☼\n" +
-                        "☼#  ☼    ○☼  ☼○   ○☼    ☼  ○☼  ☼\n" +
+                        "☼☼  ☼☼☼  ☼☼  ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼\n" +
+                        "☼#  ☼○   $☼  ☼○○☼ ®☼  ☼<───┐☼  ☼\n" +
+                        "☼☼  ☼  ☼● ☼  ☼    ☼☼  ☼  ☼┌┘☼  ☼\n" +
+                        "☼☼  ☼○ ○☼    ☼  ●     ☼ $$│☼☼  ☼\n" +
+                        "☼☼  ☼☼   ○® ®☼☼         ● └┐   ☼\n" +
+                        "☼☼        ☼     ®☼®☼      ☼│   ☼\n" +
+                        "☼#    ☼  ○☼  ☼  ® ○☼  ☼    ¤☼  ☼\n" +
                         "☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼  ☼\n" +
-                        "☼☼     ®                    ®  ☼\n" +
                         "☼☼                             ☼\n" +
-                        "☼☼  ☼☼☼☼  ☼☼☼☼ ○☼☼☼☼  ☼☼☼☼  ☼  ☼\n" +
-                        "☼☼  ☼  ○        ☼$      ☼○  ☼  ☼\n" +
-                        "☼#     ☼    ●○    ☼   ☼$  ☼    ☼\n" +
-                        "☼☼    ●$    ☼   ○☼     ●  ☼    ☼\n" +
-                        "☼☼  ☼   ○☼○®     ○  ☼○ ○  ○ ☼  ☼\n" +
+                        "☼☼                         ®   ☼\n" +
+                        "☼☼® ☼☼☼☼  ☼  ☼☼☼☼  ☼  ☼☼☼  ☼☼  ☼\n" +
+                        "☼#  ☼  ☼  ☼  ☼     ☼  ☼$♥  ○☼  ☼\n" +
+                        "☼☼  ☼    ☼☼  ☼  ☼  ☼  ☼ ║☼● ☼  ☼\n" +
+                        "☼☼® ☼  ●     ☼    ☼☼  ☼○║ ☼    ☼\n" +
+                        "☼☼  ☼☼         ●      ☼☼║ ○    ☼\n" +
+                        "☼☼      ☼ ☼      ☼     ╔╝   ☼  ☼\n" +
+                        "☼#  ☼     ☼  ☼     ☼ ╔═╝☼  ○☼  ☼\n" +
+                        "☼☼  ☼☼☼  ☼☼  ☼☼☼  ☼☼ ║☼☼☼  ☼☼  ☼\n" +
+                        "☼☼         ○     ●   ╚╕        ☼\n" +
+                        "☼☼                   ○         ☼\n" +
+                        "☼☼  ☼☼☼☼  ☼☼☼☼  ☼☼☼☼  ☼☼☼☼  ☼  ☼\n" +
+                        "☼☼  ☼  ○        ☼       ☼   ☼  ☼\n" +
+                        "☼#     ☼    ●     ☼   ☼   ☼    ☼\n" +
+                        "☼☼          ☼    ☼        ☼    ☼\n" +
+                        "☼☼  ☼    ☼          ☼○    ○ ☼  ☼\n" +
                         "☼☼  ☼  ☼☼☼☼  ☼☼☼☼☼  ☼☼☼☼  ☼☼☼  ☼\n" +
-                        "☼☼      ○                      ☼\n" +
-                        "☼☼                 ®           ☼\n" +
-                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼");
+                        "☼☼                             ☼\n" +
+                        "☼☼               ○             ☼\n" +
+                        "☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼☼\n");
 
         GameBoard testGameBoard = gameBoard;
 
@@ -63,8 +60,9 @@ public class Test {
         BoardPoint myHead = testGameBoard.getMyHead();
         System.out.println("My head is " + myHead);
 
-        Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, false);
-        List<BoardPoint> pathToAttack1 = Main.getPathToAim(testGameBoard, myHead, allApples, pathPoints);
-        System.out.println(pathToAttack1);
+        Main.modifyApplesAndPathPoints(allApples, pathPoints, myHead, testGameBoard, true);
+        List<BoardPoint> pathToAttack = Main.getPathToAim(gameBoard, myHead, allApples, pathPoints);
+//        SnakeAction pathToAttack1 = Main.getSnakeAction(testGameBoard, myHead, true, new ArrayList<>());
+        System.out.println(pathToAttack);
     }
 }
